@@ -17,7 +17,7 @@ $breadcrumb = $breadcrumb ?? [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title); ?> — SENA Instructor</title>
-    <link rel="stylesheet" href="/proyectoo_22_/mvc_programa/assets/css/styles.css">
+    <link rel="stylesheet" href="/proyectoo_22_/mvc_programa/assets/css/styles.css?v=2.0">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -84,10 +84,6 @@ $breadcrumb = $breadcrumb ?? [];
         </nav>
 
         <div class="sidebar-footer">
-            <a href="/proyectoo_22_/mvc_programa/index.php" style="display: block; padding: 12px 16px; margin: 0 16px 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white; text-decoration: none; text-align: center; font-size: 14px; transition: all 0.3s;">
-                <i data-lucide="log-out" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 8px;"></i>
-                Cambiar Rol
-            </a>
             <div class="sidebar-user">
                 <div class="sidebar-user-avatar">
                     I

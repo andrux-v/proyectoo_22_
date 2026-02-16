@@ -3,17 +3,35 @@
  * Vista: Listado de Competencias (index.php)
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
 
-// --- Datos de prueba ---
-$competencias = $competencias ?? [
-    ['comp_id' => 1, 'comp_nombre_corto' => 'Promover salud', 'comp_horas' => 40, 'comp_nombre_unidad_competencia' => 'Promover la salud y seguridad en el trabajo'],
-    ['comp_id' => 2, 'comp_nombre_corto' => 'Ética', 'comp_horas' => 60, 'comp_nombre_unidad_competencia' => 'Promover la interacción idónea'],
-];
-$mensaje = $mensaje ?? null;
-$error = $error ?? null;
-// --- Fin datos de prueba ---
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/CompetenciaController.php';
+
+$controller = new CompetenciaController();
+
+// Procesar eliminación
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $resultado = $controller->delete($_POST['comp_id']);
+    
+    if ($resultado['success']) {
+        $mensaje = $resultado['mensaje'];
+    } else {
+        $error = $resultado['error'];
+    }
+}
+
+// Obtener todas las competencias
+$competencias = $controller->index();
+
+// Obtener mensajes de la URL
+$mensaje = $_GET['mensaje'] ?? $mensaje ?? null;
+$error = $_GET['error'] ?? $error ?? null;
 
 $title = 'Competencias';
 $breadcrumb = [

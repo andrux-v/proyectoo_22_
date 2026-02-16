@@ -3,20 +3,46 @@
  * Vista: Registrar Competencia (crear.php)
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
 
 // Redirigir si es instructor (no tiene permisos para crear)
 if ($rol === 'instructor') {
-    header('Location: ' . addRolParam('index.php', $rol));
+    header('Location: /proyectoo_22_/mvc_programa/views/competencia/index.php?rol=instructor');
     exit;
 }
 
-// --- Datos de prueba ---
-$errores = $errores ?? [];
-$old = $old ?? [];
-// --- Fin datos de prueba ---
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/CompetenciaController.php';
+
+$controller = new CompetenciaController();
+
+// Variables para el formulario
+$errores = [];
+$old = [];
+
+// Procesar el formulario
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create') {
+    $resultado = $controller->create($_POST);
+    
+    if ($resultado['success']) {
+        // Redirigir al index con mensaje de éxito
+        $redirectUrl = '/proyectoo_22_/mvc_programa/views/competencia/index.php';
+        if ($rol === 'instructor') {
+            $redirectUrl .= '?rol=instructor';
+        }
+        $redirectUrl .= (strpos($redirectUrl, '?') !== false ? '&' : '?') . 'mensaje=' . urlencode($resultado['mensaje']);
+        header('Location: ' . $redirectUrl);
+        exit;
+    } else {
+        $errores = $resultado['errores'];
+        $old = $_POST;
+    }
+}
 
 $title = 'Registrar Competencia';
 $breadcrumb = [

@@ -3,24 +3,49 @@
  * Vista: Registrar Programa (crear.php)
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
 
 // Redirigir si es instructor (no tiene permisos para crear/editar)
 if ($rol === 'instructor') {
-    header('Location: ' . addRolParam('index.php', $rol));
+    header('Location: /proyectoo_22_/mvc_programa/views/programa/index.php?rol=instructor');
     exit;
 }
-// --- Datos de prueba ---
-$rol = $rol ?? 'coordinador';
-$errores = $errores ?? [];
-$old = $old ?? [];
-$titulos = $titulos ?? [
-    ['tibro_id' => 1, 'tibro_nombre' => 'Tecnólogo'],
-    ['tibro_id' => 2, 'tibro_nombre' => 'Técnico'],
-];
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/ProgramaController.php';
+
+$controller = new ProgramaController();
+
+// Variables para el formulario
+$errores = [];
+$old = [];
+
+// Procesar el formulario
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create') {
+    $resultado = $controller->create($_POST);
+    
+    if ($resultado['success']) {
+        // Redirigir al index con mensaje de éxito
+        $redirectUrl = '/proyectoo_22_/mvc_programa/views/programa/index.php';
+        if ($rol === 'instructor') {
+            $redirectUrl .= '?rol=instructor';
+        }
+        $redirectUrl .= (strpos($redirectUrl, '?') !== false ? '&' : '?') . 'mensaje=' . urlencode($resultado['mensaje']);
+        header('Location: ' . $redirectUrl);
+        exit;
+    } else {
+        $errores = $resultado['errores'];
+        $old = $_POST;
+    }
+}
+
+// Obtener títulos de programa para el select
+$titulos = $controller->getTitulosPrograma();
 
 $title = 'Registrar Programa';
 $breadcrumb = [
@@ -29,7 +54,7 @@ $breadcrumb = [
     ['label' => 'Registrar'],
 ];
 
-// Incluir el header seg�n el rol
+// Incluir el header seg�n el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
 } else {
@@ -107,29 +132,29 @@ if ($rol === 'instructor') {
                     </div>
 
                     <div class="form-group">
-                        <label for="TIT_PROGRAMA_tibro_id" class="form-label">
+                        <label for="TIT_PROGRAMA_titpro_id" class="form-label">
                             Nivel de Formación <span class="required">*</span>
                         </label>
                         <select
-                            id="TIT_PROGRAMA_tibro_id"
-                            name="TIT_PROGRAMA_tibro_id"
-                            class="form-input <?php echo isset($errores['TIT_PROGRAMA_tibro_id']) ? 'input-error' : ''; ?>"
+                            id="TIT_PROGRAMA_titpro_id"
+                            name="TIT_PROGRAMA_titpro_id"
+                            class="form-input <?php echo isset($errores['TIT_PROGRAMA_titpro_id']) ? 'input-error' : ''; ?>"
                             required
                         >
                             <option value="">Seleccione...</option>
                             <?php foreach ($titulos as $titulo): ?>
                                 <option
-                                    value="<?php echo $titulo['tibro_id']; ?>"
-                                    <?php echo(isset($old['TIT_PROGRAMA_tibro_id']) && $old['TIT_PROGRAMA_tibro_id'] == $titulo['tibro_id']) ? 'selected' : ''; ?>
+                                    value="<?php echo $titulo['titpro_id']; ?>"
+                                    <?php echo(isset($old['TIT_PROGRAMA_titpro_id']) && $old['TIT_PROGRAMA_titpro_id'] == $titulo['titpro_id']) ? 'selected' : ''; ?>
                                 >
-                                    <?php echo htmlspecialchars($titulo['tibro_nombre']); ?>
+                                    <?php echo htmlspecialchars($titulo['titpro_nombre']); ?>
                                 </option>
                             <?php
 endforeach; ?>
                         </select>
-                         <div class="form-error <?php echo isset($errores['TIT_PROGRAMA_tibro_id']) ? 'visible' : ''; ?>">
+                         <div class="form-error <?php echo isset($errores['TIT_PROGRAMA_titpro_id']) ? 'visible' : ''; ?>">
                             <i data-lucide="alert-circle"></i>
-                            <span><?php echo htmlspecialchars($errores['TIT_PROGRAMA_tibro_id'] ?? 'Requerido.'); ?></span>
+                            <span><?php echo htmlspecialchars($errores['TIT_PROGRAMA_titpro_id'] ?? 'Requerido.'); ?></span>
                         </div>
                     </div>
 

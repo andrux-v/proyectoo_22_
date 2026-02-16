@@ -3,20 +3,62 @@
  * Vista: Editar Competencia (editar.php)
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
 
-// Redirigir si es instructor (no tiene permisos para crear/editar)
+// Redirigir si es instructor (no tiene permisos para editar)
 if ($rol === 'instructor') {
-    header('Location: ' . addRolParam('index.php', $rol));
+    header('Location: /proyectoo_22_/mvc_programa/views/competencia/index.php?rol=instructor');
     exit;
 }
-// --- Datos de prueba ---
-$rol = $rol ?? 'coordinador';
-$competencia = $competencia ?? ['comp_id' => 1, 'comp_nombre_corto' => 'Promover salud', 'comp_horas' => 40, 'comp_nombre_unidad_competencia' => 'Promover la salud y seguridad en el trabajo'];
-$errores = $errores ?? [];
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/CompetenciaController.php';
+
+$controller = new CompetenciaController();
+
+// Obtener el ID de la competencia
+$comp_id = $_GET['id'] ?? null;
+
+if (!$comp_id) {
+    header('Location: /proyectoo_22_/mvc_programa/views/competencia/index.php?error=' . urlencode('ID de competencia no especificado'));
+    exit;
+}
+
+// Variables para el formulario
+$errores = [];
+
+// Procesar el formulario
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
+    $resultado = $controller->update($_POST);
+    
+    if ($resultado['success']) {
+        // Redirigir al index con mensaje de éxito
+        $redirectUrl = '/proyectoo_22_/mvc_programa/views/competencia/index.php';
+        if ($rol === 'instructor') {
+            $redirectUrl .= '?rol=instructor';
+        }
+        $redirectUrl .= (strpos($redirectUrl, '?') !== false ? '&' : '?') . 'mensaje=' . urlencode($resultado['mensaje']);
+        header('Location: ' . $redirectUrl);
+        exit;
+    } else {
+        $errores = $resultado['errores'];
+        // Mantener los datos del POST para mostrarlos en el formulario
+        $competencia = $_POST;
+    }
+} else {
+    // Obtener la competencia
+    $competencia = $controller->show($comp_id);
+    
+    if (!$competencia) {
+        header('Location: /proyectoo_22_/mvc_programa/views/competencia/index.php?error=' . urlencode('Competencia no encontrada'));
+        exit;
+    }
+}
 
 $title = 'Editar Competencia';
 $breadcrumb = [
@@ -25,7 +67,7 @@ $breadcrumb = [
     ['label' => 'Editar'],
 ];
 
-// Incluir el header seg�n el rol
+// Incluir el header seg�n el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
 } else {

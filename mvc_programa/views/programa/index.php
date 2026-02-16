@@ -3,18 +3,35 @@
  * Vista: Listado de Programas (index.php)
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
-// --- Datos de prueba ---
-$rol = $rol ?? 'coordinador';
-$programas = $programas ?? [
-    ['prog_id' => 1, 'prog_codigo' => '228106', 'prog_denominacion' => 'Análisis y Desarrollo de Software', 'prog_version' => '2', 'prog_duracion' => '2640'],
-    ['prog_id' => 2, 'prog_codigo' => '233104', 'prog_denominacion' => 'Gestión Contable y Financiera', 'prog_version' => '1', 'prog_duracion' => '1980'],
-];
-$mensaje = $mensaje ?? null;
-$error = $error ?? null;
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/ProgramaController.php';
+
+$controller = new ProgramaController();
+
+// Procesar eliminación
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $resultado = $controller->delete($_POST['prog_codigo']);
+    
+    if ($resultado['success']) {
+        $mensaje = $resultado['mensaje'];
+    } else {
+        $error = $resultado['error'];
+    }
+}
+
+// Obtener todos los programas
+$programas = $controller->index();
+
+// Obtener mensajes de la URL
+$mensaje = $_GET['mensaje'] ?? null;
+$error = $_GET['error'] ?? null;
 
 $title = 'Gestión de Programas';
 $breadcrumb = [
@@ -22,7 +39,7 @@ $breadcrumb = [
     ['label' => 'Programas'],
 ];
 
-// Incluir el header seg�n el rol
+// Incluir el header seg�n el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
 } else {
@@ -61,32 +78,30 @@ if ($rol === 'instructor') {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Código</th>
                             <th>Denominación</th>
-                            <th>Versión</th>
-                            <th>Duración (horas)</th>
+                            <th>Tipo</th>
+                            <th>Nivel de Formación</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($programas as $prog): ?>
                         <tr>
-                            <td><span class="table-id"><?php echo htmlspecialchars($prog['prog_id']); ?></span></td>
-                            <td><?php echo htmlspecialchars($prog['prog_codigo']); ?></td>
+                            <td><span class="table-id"><?php echo htmlspecialchars($prog['prog_codigo']); ?></span></td>
                             <td><?php echo htmlspecialchars($prog['prog_denominacion']); ?></td>
-                            <td><?php echo htmlspecialchars($prog['prog_version']); ?></td>
-                            <td><?php echo htmlspecialchars($prog['prog_duracion']); ?></td>
+                            <td><?php echo htmlspecialchars($prog['prog_tipo']); ?></td>
+                            <td><?php echo htmlspecialchars($prog['titpro_nombre'] ?? 'N/A'); ?></td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="ver.php?id=<?php echo $prog['prog_id']; ?>" class="action-btn view-btn" title="Ver detalle">
+                                    <a href="ver.php?codigo=<?php echo $prog['prog_codigo']; ?>" class="action-btn view-btn" title="Ver detalle">
                                         <i data-lucide="eye"></i>
                                     </a>
                                     <?php if ($rol === 'coordinador'): ?>
-                                        <a href="editar.php?id=<?php echo $prog['prog_id']; ?>" class="action-btn edit-btn" title="Editar programa">
+                                        <a href="editar.php?codigo=<?php echo $prog['prog_codigo']; ?>" class="action-btn edit-btn" title="Editar programa">
                                             <i data-lucide="pencil-line"></i>
                                         </a>
-                                        <button type="button" class="action-btn delete-btn" title="Eliminar programa" onclick="confirmDelete(<?php echo $prog['prog_id']; ?>, '<?php echo htmlspecialchars(addslashes($prog['prog_denominacion']), ENT_QUOTES); ?>')">
+                                        <button type="button" class="action-btn delete-btn" title="Eliminar programa" onclick="confirmDelete('<?php echo $prog['prog_codigo']; ?>', '<?php echo htmlspecialchars(addslashes($prog['prog_denominacion']), ENT_QUOTES); ?>')">
                                             <i data-lucide="trash-2"></i>
                                         </button>
                                     <?php endif; ?>
@@ -134,7 +149,7 @@ if ($rol === 'instructor') {
                 Cancelar
             </button>
             <form id="deleteForm" method="POST" action="" style="flex:1;">
-                <input type="hidden" name="prog_id" id="deleteModalId">
+                <input type="hidden" name="prog_codigo" id="deleteModalCodigo">
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center;">
                     <i data-lucide="trash-2"></i>
@@ -146,8 +161,8 @@ if ($rol === 'instructor') {
 </div>
 
 <script>
-    function confirmDelete(id, nombre) {
-        document.getElementById('deleteModalId').value = id;
+    function confirmDelete(codigo, nombre) {
+        document.getElementById('deleteModalCodigo').value = codigo;
         document.getElementById('deleteModalName').textContent = nombre;
         document.getElementById('deleteModal').classList.add('active');
     }

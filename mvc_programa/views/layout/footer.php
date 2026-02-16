@@ -1,6 +1,12 @@
     </main><!-- /.main-content -->
 </div><!-- /.app-layout -->
 
+<!-- Botón flotante para cambiar de rol -->
+<a href="/proyectoo_22_/mvc_programa/index.php" class="floating-logout-btn" title="Cambiar Rol">
+    <i data-lucide="log-out"></i>
+    <span>Cambiar Rol</span>
+</a>
+
 <script>
     // Initialize Lucide icons
     lucide.createIcons();

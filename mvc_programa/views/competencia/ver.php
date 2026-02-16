@@ -3,12 +3,33 @@
  * Vista: Detalle de Competencia (ver.php)
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
-// --- Datos de prueba ---
-$competencia = $competencia ?? ['comp_id' => 1, 'comp_nombre_corto' => 'Promover salud', 'comp_horas' => 40, 'comp_nombre_unidad_competencia' => 'Promover la salud y seguridad en el trabajo'];
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/CompetenciaController.php';
+
+$controller = new CompetenciaController();
+
+// Obtener el ID de la competencia
+$comp_id = $_GET['id'] ?? null;
+
+if (!$comp_id) {
+    header('Location: /proyectoo_22_/mvc_programa/views/competencia/index.php?error=' . urlencode('ID de competencia no especificado'));
+    exit;
+}
+
+// Obtener la competencia
+$competencia = $controller->show($comp_id);
+
+if (!$competencia) {
+    header('Location: /proyectoo_22_/mvc_programa/views/competencia/index.php?error=' . urlencode('Competencia no encontrada'));
+    exit;
+}
 
 $title = 'Detalle de Competencia';
 $breadcrumb = [
