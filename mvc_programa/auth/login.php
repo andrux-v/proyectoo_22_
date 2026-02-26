@@ -233,8 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, rgba(57, 169, 0, 0.9) 0%, rgba(0, 120, 50, 0.9) 100%),
-                        url('/proyectoo_22_/mvc_programa/sena_doble_titulacion-e1754918865796.jpg');
+            background: url('/proyectoo_22_/mvc_programa/sena_doble_titulacion-e1754918865796.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -248,19 +247,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             z-index: 0;
         }
         .auth-card {
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             max-width: 500px;
             width: 100%;
             overflow: hidden;
             position: relative;
             z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         .auth-header {
             background: linear-gradient(135deg, #39A900 0%, #007832 100%);
