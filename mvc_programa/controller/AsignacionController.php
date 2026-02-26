@@ -222,6 +222,26 @@ class AsignacionController
                 return ['success' => false, 'errores' => $errores];
             }
 
+            // Validar carga horaria antes de crear
+            $validacionCarga = $this->validarCargaHoraria(
+                $data['instructor_inst_id'],
+                $data['competencia_comp_id'],
+                $data['asig_fecha_ini'],
+                $data['asig_fecha_fin']
+            );
+            
+            if (!$validacionCarga['valido']) {
+                $this->db->rollBack();
+                return ['success' => false, 'errores' => ['carga_horaria' => $validacionCarga['mensaje']]];
+            }
+
+            // Establecer usuario para auditoría
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $usuario = $_SESSION['user_correo'] ?? $_SESSION['coordinador_correo'] ?? $_SESSION['centro_correo'] ?? 'sistema';
+            $this->db->exec("SET @usuario_actual = '$usuario'");
+
             // Crear la asignación principal
             $asignacion = new AsignacionModel(
                 null,
@@ -273,6 +293,27 @@ class AsignacionController
                 return ['success' => false, 'errores' => $errores];
             }
 
+            // Validar carga horaria antes de actualizar (excluyendo la asignación actual)
+            $validacionCarga = $this->validarCargaHoraria(
+                $data['instructor_inst_id'],
+                $data['competencia_comp_id'],
+                $data['asig_fecha_ini'],
+                $data['asig_fecha_fin'],
+                $data['asig_id']
+            );
+            
+            if (!$validacionCarga['valido']) {
+                $this->db->rollBack();
+                return ['success' => false, 'errores' => ['carga_horaria' => $validacionCarga['mensaje']]];
+            }
+
+            // Establecer usuario para auditoría
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $usuario = $_SESSION['user_correo'] ?? $_SESSION['coordinador_correo'] ?? $_SESSION['centro_correo'] ?? 'sistema';
+            $this->db->exec("SET @usuario_actual = '$usuario'");
+
             // Actualizar la asignación principal
             $asignacion = new AsignacionModel(
                 $data['asig_id'],
@@ -323,12 +364,19 @@ class AsignacionController
         try {
             $this->db->beginTransaction();
 
+            // Establecer usuario para auditoría
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $usuario = $_SESSION['user_correo'] ?? $_SESSION['coordinador_correo'] ?? $_SESSION['centro_correo'] ?? 'sistema';
+            $this->db->exec("SET @usuario_actual = '$usuario'");
+
             // Eliminar detalles primero (por la clave foránea)
             $query = "DELETE FROM detalle_asignacion WHERE asignacion_asig_id = :asig_id";
             $stmt = $this->db->prepare($query);
             $stmt->execute([':asig_id' => $asig_id]);
 
-            // Eliminar la asignación
+            // Eliminar la asignación (el trigger de auditoría se ejecutará automáticamente)
             $asignacion = new AsignacionModel($asig_id, '', '', '', '', '', '');
             $asignacion->delete();
 
@@ -564,6 +612,111 @@ class AsignacionController
         }
 
         return $errores;
+    }
+
+    /**
+     * Validar carga horaria del instructor
+     * Verifica que no se superen las 20 horas semanales por competencia
+     * y las 40 horas semanales totales del instructor
+     */
+    private function validarCargaHoraria($instructor_id, $competencia_id, $fecha_ini, $fecha_fin, $asig_id_excluir = null)
+    {
+        try {
+            // Obtener horas de la competencia
+            $query = "SELECT comp_horas FROM competencia WHERE comp_id = :comp_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([':comp_id' => $competencia_id]);
+            $competencia = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$competencia) {
+                return ['valido' => false, 'mensaje' => 'Competencia no encontrada'];
+            }
+            
+            $horas_competencia = $competencia['comp_horas'];
+            
+            // Calcular semanas de la asignación
+            $fecha_inicio = new DateTime($fecha_ini);
+            $fecha_final = new DateTime($fecha_fin);
+            $dias = $fecha_inicio->diff($fecha_final)->days;
+            $semanas = max(1, $dias / 7); // Mínimo 1 semana
+            
+            // Calcular horas por semana de esta asignación
+            $horas_por_semana = $horas_competencia / $semanas;
+            
+            // Validar que no supere 20 horas semanales por competencia
+            if ($horas_por_semana > 20) {
+                return [
+                    'valido' => false,
+                    'mensaje' => sprintf(
+                        'Esta asignación requiere %.2f horas semanales, superando el límite de 20 horas por competencia. Considere extender el período de la asignación.',
+                        $horas_por_semana
+                    )
+                ];
+            }
+            
+            // Calcular total de horas semanales del instructor en el mismo período
+            $query = "SELECT a.asig_id, a.asig_fecha_ini, a.asig_fecha_fin, c.comp_horas
+                      FROM asignacion a
+                      INNER JOIN competencia c ON a.competencia_comp_id = c.comp_id
+                      WHERE a.instructor_inst_id = :instructor_id
+                      AND (
+                          (:fecha_ini BETWEEN a.asig_fecha_ini AND a.asig_fecha_fin)
+                          OR (:fecha_fin BETWEEN a.asig_fecha_ini AND a.asig_fecha_fin)
+                          OR (a.asig_fecha_ini BETWEEN :fecha_ini2 AND :fecha_fin2)
+                      )";
+            
+            if ($asig_id_excluir) {
+                $query .= " AND a.asig_id != :asig_id_excluir";
+            }
+            
+            $stmt = $this->db->prepare($query);
+            $params = [
+                ':instructor_id' => $instructor_id,
+                ':fecha_ini' => $fecha_ini,
+                ':fecha_fin' => $fecha_fin,
+                ':fecha_ini2' => $fecha_ini,
+                ':fecha_fin2' => $fecha_fin
+            ];
+            
+            if ($asig_id_excluir) {
+                $params[':asig_id_excluir'] = $asig_id_excluir;
+            }
+            
+            $stmt->execute($params);
+            $asignaciones_existentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $total_horas_semanales = 0;
+            foreach ($asignaciones_existentes as $asig) {
+                $fecha_ini_asig = new DateTime($asig['asig_fecha_ini']);
+                $fecha_fin_asig = new DateTime($asig['asig_fecha_fin']);
+                $dias_asig = $fecha_ini_asig->diff($fecha_fin_asig)->days;
+                $semanas_asig = max(1, $dias_asig / 7);
+                $total_horas_semanales += $asig['comp_horas'] / $semanas_asig;
+            }
+            
+            // Validar que el total no supere 40 horas semanales
+            if (($total_horas_semanales + $horas_por_semana) > 40) {
+                return [
+                    'valido' => false,
+                    'mensaje' => sprintf(
+                        'El instructor ya tiene %.2f horas semanales asignadas en este período. Esta nueva asignación (%.2f horas/semana) superaría el límite de 40 horas semanales.',
+                        $total_horas_semanales,
+                        $horas_por_semana
+                    )
+                ];
+            }
+            
+            return [
+                'valido' => true,
+                'mensaje' => 'Validación exitosa',
+                'horas_por_semana' => $horas_por_semana,
+                'total_horas_semanales' => $total_horas_semanales + $horas_por_semana
+            ];
+            
+        } catch (PDOException $e) {
+            error_log("Error en validarCargaHoraria: " . $e->getMessage());
+            return ['valido' => false, 'mensaje' => 'Error al validar la carga horaria'];
+        }
     }
 }
 ?>
