@@ -22,14 +22,27 @@ class ProgramaController
     public function index()
     {
         try {
-            $query = "SELECT p.prog_codigo, p.prog_denominacion, p.TIT_PROGRAMA_titpro_id, 
-                             p.prog_tipo, t.titpro_nombre 
+            $query = "SELECT p.prog_codigo, p.prog_denominacion, p.tit_programa_titpro_id, 
+                             p.prog_tipo
                       FROM programa p 
-                      LEFT JOIN titulo_programa t ON p.TIT_PROGRAMA_titpro_id = t.titpro_id 
                       ORDER BY p.prog_denominacion ASC";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $programas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Obtener niveles de formación
+            $niveles = $this->getTitulosPrograma();
+            $nivelesMap = [];
+            foreach ($niveles as $nivel) {
+                $nivelesMap[$nivel['titpro_id']] = $nivel['titpro_nombre'];
+            }
+            
+            // Agregar el nombre del nivel a cada programa
+            foreach ($programas as &$programa) {
+                $programa['titpro_nombre'] = $nivelesMap[$programa['tit_programa_titpro_id']] ?? 'N/A';
+            }
+            
+            return $programas;
         } catch (PDOException $e) {
             error_log("Error en ProgramaController::index - " . $e->getMessage());
             return [];
@@ -42,14 +55,26 @@ class ProgramaController
     public function show($prog_codigo)
     {
         try {
-            $query = "SELECT p.prog_codigo, p.prog_denominacion, p.TIT_PROGRAMA_titpro_id, 
-                             p.prog_tipo, t.titpro_nombre 
+            $query = "SELECT p.prog_codigo, p.prog_denominacion, p.tit_programa_titpro_id, 
+                             p.prog_tipo
                       FROM programa p 
-                      LEFT JOIN titulo_programa t ON p.TIT_PROGRAMA_titpro_id = t.titpro_id 
                       WHERE p.prog_codigo = :prog_codigo";
             $stmt = $this->db->prepare($query);
             $stmt->execute([':prog_codigo' => $prog_codigo]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $programa = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($programa) {
+                // Obtener niveles de formación
+                $niveles = $this->getTitulosPrograma();
+                foreach ($niveles as $nivel) {
+                    if ($nivel['titpro_id'] == $programa['tit_programa_titpro_id']) {
+                        $programa['titpro_nombre'] = $nivel['titpro_nombre'];
+                        break;
+                    }
+                }
+            }
+            
+            return $programa;
         } catch (PDOException $e) {
             error_log("Error en ProgramaController::show - " . $e->getMessage());
             return null;
@@ -72,7 +97,7 @@ class ProgramaController
             $programa = new ProgramaModel(
                 $data['prog_codigo'],
                 $data['prog_denominacion'],
-                $data['TIT_PROGRAMA_titpro_id'],
+                $data['tit_programa_titpro_id'],
                 $data['prog_tipo']
             );
 
@@ -107,7 +132,7 @@ class ProgramaController
             $programa = new ProgramaModel(
                 $data['prog_codigo'],
                 $data['prog_denominacion'],
-                $data['TIT_PROGRAMA_titpro_id'],
+                $data['tit_programa_titpro_id'],
                 $data['prog_tipo']
             );
 
@@ -127,7 +152,7 @@ class ProgramaController
     {
         try {
             // Verificar si el programa está siendo usado en fichas
-            $query = "SELECT COUNT(*) as count FROM ficha WHERE PROGRAMA_prog_id = :prog_codigo";
+            $query = "SELECT COUNT(*) as count FROM ficha WHERE programa_prog_id = :prog_codigo";
             $stmt = $this->db->prepare($query);
             $stmt->execute([':prog_codigo' => $prog_codigo]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -137,7 +162,7 @@ class ProgramaController
             }
 
             // Verificar si tiene competencias asociadas
-            $query = "SELECT COUNT(*) as count FROM competxprograma WHERE PROGRAMA_prog_id = :prog_codigo";
+            $query = "SELECT COUNT(*) as count FROM competxprograma WHERE programa_prog_id = :prog_codigo";
             $stmt = $this->db->prepare($query);
             $stmt->execute([':prog_codigo' => $prog_codigo]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -158,19 +183,18 @@ class ProgramaController
     }
 
     /**
-     * Obtener todos los títulos de programa para el select
+     * Obtener todos los títulos de programa (niveles de formación SENA)
      */
     public function getTitulosPrograma()
     {
-        try {
-            $query = "SELECT titpro_id, titpro_nombre FROM titulo_programa ORDER BY titpro_nombre ASC";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Error en ProgramaController::getTitulosPrograma - " . $e->getMessage());
-            return [];
-        }
+        // Niveles de formación fijos del SENA
+        return [
+            ['titpro_id' => 1, 'titpro_nombre' => 'Auxiliar'],
+            ['titpro_id' => 2, 'titpro_nombre' => 'Operario'],
+            ['titpro_id' => 3, 'titpro_nombre' => 'Técnico'],
+            ['titpro_id' => 4, 'titpro_nombre' => 'Tecnólogo'],
+            ['titpro_id' => 5, 'titpro_nombre' => 'Especialización Tecnológica']
+        ];
     }
 
     /**
@@ -197,8 +221,8 @@ class ProgramaController
         }
 
         // Validar título de programa
-        if (empty($data['TIT_PROGRAMA_titpro_id'])) {
-            $errores['TIT_PROGRAMA_titpro_id'] = 'Debe seleccionar un título de programa';
+        if (empty($data['tit_programa_titpro_id'])) {
+            $errores['tit_programa_titpro_id'] = 'Debe seleccionar un título de programa';
         }
 
         // Validar tipo de programa

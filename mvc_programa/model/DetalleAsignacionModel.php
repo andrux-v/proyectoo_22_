@@ -55,7 +55,7 @@ class DetalleAsignacionModel
     //crud
     public function create()
     {
-        $query = "INSERT INTO detallexasignacion (ASIGNACION_ASIG_ID, detasig_hora_ini, detasig_hora_fin) 
+        $query = "INSERT INTO detalle_asignacion (asignacion_asig_id, detasig_hora_ini, detasig_hora_fin) 
         VALUES (:asignacion_asig_id, :detasig_hora_ini, :detasig_hora_fin)";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':asignacion_asig_id', $this->asignacion_asig_id);
@@ -66,7 +66,7 @@ class DetalleAsignacionModel
     }
     public function read()
     {
-        $sql = "SELECT * FROM detallexasignacion WHERE ASIGNACION_ASIG_ID = :asignacion_asig_id";
+        $sql = "SELECT * FROM detalle_asignacion WHERE asignacion_asig_id = :asignacion_asig_id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':asignacion_asig_id' => $this->asignacion_asig_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -74,14 +74,14 @@ class DetalleAsignacionModel
 
     public function readAll()
     {
-        $sql = "SELECT * FROM detallexasignacion";
+        $sql = "SELECT * FROM detalle_asignacion";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function update()
     {
-        $query = "UPDATE detallexasignacion SET ASIGNACION_ASIG_ID = :asignacion_asig_id, detasig_hora_ini = :detasig_hora_ini, detasig_hora_fin = :detasig_hora_fin WHERE detasig_id = :detasig_id";
+        $query = "UPDATE detalle_asignacion SET asignacion_asig_id = :asignacion_asig_id, detasig_hora_ini = :detasig_hora_ini, detasig_hora_fin = :detasig_hora_fin WHERE detasig_id = :detasig_id";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':asignacion_asig_id', $this->asignacion_asig_id);
         $stmt->bindParam(':detasig_hora_ini', $this->detasig_hora_ini);
@@ -92,7 +92,7 @@ class DetalleAsignacionModel
     }
     public function delete()
     {
-        $query = "DELETE FROM detallexasignacion WHERE detasig_id = :detasig_id";
+        $query = "DELETE FROM detalle_asignacion WHERE detasig_id = :detasig_id";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':detasig_id', $this->detasig_id);
         $stmt->execute();

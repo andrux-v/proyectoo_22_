@@ -84,10 +84,6 @@ $rol = $rol ?? 'instructor';
                 <i data-lucide="award"></i>
                 Competencias
             </a>
-            <a href="/proyectoo_22_/mvc_programa/views/competencia_programa/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/competencia_programa/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="link"></i>
-                Comp. x Prog.
-            </a>
             <a href="/proyectoo_22_/mvc_programa/views/titulo_programa/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/titulo_programa/') !== false) ? 'active' : ''; ?>">
                 <i data-lucide="scroll"></i>
                 Títulos
@@ -116,6 +112,10 @@ $rol = $rol ?? 'instructor';
                     </div>
                 </div>
             </div>
+            <a href="/proyectoo_22_/mvc_programa/auth/logout.php" class="sidebar-logout-btn">
+                <i data-lucide="log-out"></i>
+                <span>Cerrar Sesión</span>
+            </a>
         </div>
     </aside>
 

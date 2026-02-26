@@ -7,15 +7,19 @@ class FichaModel
     private $INSTRUCTOR_inst_id_lider;
     private $fich_jornada;
     private $COORDINACION_coord_id;
+    private $fich_fecha_ini_lectiva;
+    private $fich_fecha_fin_lectiva;
     private $db;
 
-    public function __construct($fich_id, $PROGRAMA_prog_id, $INSTRUCTOR_inst_id_lider, $fich_jornada, $COORDINACION_coord_id)
+    public function __construct($fich_id, $PROGRAMA_prog_id, $INSTRUCTOR_inst_id_lider, $fich_jornada, $COORDINACION_coord_id, $fich_fecha_ini_lectiva = null, $fich_fecha_fin_lectiva = null)
     {
         $this->setFichId($fich_id);
         $this->setProgramaProgId($PROGRAMA_prog_id);
         $this->setInstructorInstIdLider($INSTRUCTOR_inst_id_lider);
         $this->setFichJornada($fich_jornada);
         $this->setCoordinacionCoordId($COORDINACION_coord_id);
+        $this->setFichFechaIniLectiva($fich_fecha_ini_lectiva);
+        $this->setFichFechaFinLectiva($fich_fecha_fin_lectiva);
         $this->db = Conexion::getConnect();
     }
     //getters 
@@ -40,6 +44,14 @@ class FichaModel
     {
         return $this->COORDINACION_coord_id;
     }
+    public function getFichFechaIniLectiva()
+    {
+        return $this->fich_fecha_ini_lectiva;
+    }
+    public function getFichFechaFinLectiva()
+    {
+        return $this->fich_fecha_fin_lectiva;
+    }
 
     //setters 
     public function setFichId($fich_id)
@@ -62,18 +74,29 @@ class FichaModel
     {
         $this->COORDINACION_coord_id = $COORDINACION_coord_id;
     }
+    public function setFichFechaIniLectiva($fich_fecha_ini_lectiva)
+    {
+        $this->fich_fecha_ini_lectiva = $fich_fecha_ini_lectiva;
+    }
+    public function setFichFechaFinLectiva($fich_fecha_fin_lectiva)
+    {
+        $this->fich_fecha_fin_lectiva = $fich_fecha_fin_lectiva;
+    }
     //crud
     public function create()
     {
-        $query = "INSERT INTO ficha (PROGRAMA_prog_id, INSTRUCTOR_inst_id_lider, fich_jornada, COORDINACION_coord_id) 
-        VALUES (:PROGRAMA_prog_id, :INSTRUCTOR_inst_id_lider, :fich_jornada, :COORDINACION_coord_id)";
+        $query = "INSERT INTO ficha (fich_id, programa_prog_id, instructor_inst_id_lider, fich_jornada, coordinacion_coord_id, fich_fecha_ini_lectiva, fich_fecha_fin_lectiva) 
+        VALUES (:fich_id, :programa_prog_id, :instructor_inst_id_lider, :fich_jornada, :coordinacion_coord_id, :fich_fecha_ini_lectiva, :fich_fecha_fin_lectiva)";
         $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':PROGRAMA_prog_id', $this->PROGRAMA_prog_id);
-        $stmt->bindParam(':INSTRUCTOR_inst_id_lider', $this->INSTRUCTOR_inst_id_lider);
+        $stmt->bindParam(':fich_id', $this->fich_id);
+        $stmt->bindParam(':programa_prog_id', $this->PROGRAMA_prog_id);
+        $stmt->bindParam(':instructor_inst_id_lider', $this->INSTRUCTOR_inst_id_lider);
         $stmt->bindParam(':fich_jornada', $this->fich_jornada);
-        $stmt->bindParam(':COORDINACION_coord_id', $this->COORDINACION_coord_id);
+        $stmt->bindParam(':coordinacion_coord_id', $this->COORDINACION_coord_id);
+        $stmt->bindParam(':fich_fecha_ini_lectiva', $this->fich_fecha_ini_lectiva);
+        $stmt->bindParam(':fich_fecha_fin_lectiva', $this->fich_fecha_fin_lectiva);
         $stmt->execute();
-        return $this->db->lastInsertId();
+        return $this->fich_id;
     }
     public function read()
     {
@@ -92,12 +115,14 @@ class FichaModel
     }
     public function update()
     {
-        $query = "UPDATE ficha SET PROGRAMA_prog_id = :PROGRAMA_prog_id, INSTRUCTOR_inst_id_lider = :INSTRUCTOR_inst_id_lider, fich_jornada = :fich_jornada, COORDINACION_coord_id = :COORDINACION_coord_id WHERE fich_id = :fich_id";
+        $query = "UPDATE ficha SET programa_prog_id = :programa_prog_id, instructor_inst_id_lider = :instructor_inst_id_lider, fich_jornada = :fich_jornada, coordinacion_coord_id = :coordinacion_coord_id, fich_fecha_ini_lectiva = :fich_fecha_ini_lectiva, fich_fecha_fin_lectiva = :fich_fecha_fin_lectiva WHERE fich_id = :fich_id";
         $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':PROGRAMA_prog_id', $this->PROGRAMA_prog_id);
-        $stmt->bindParam(':INSTRUCTOR_inst_id_lider', $this->INSTRUCTOR_inst_id_lider);
+        $stmt->bindParam(':programa_prog_id', $this->PROGRAMA_prog_id);
+        $stmt->bindParam(':instructor_inst_id_lider', $this->INSTRUCTOR_inst_id_lider);
         $stmt->bindParam(':fich_jornada', $this->fich_jornada);
-        $stmt->bindParam(':COORDINACION_coord_id', $this->COORDINACION_coord_id);
+        $stmt->bindParam(':coordinacion_coord_id', $this->COORDINACION_coord_id);
+        $stmt->bindParam(':fich_fecha_ini_lectiva', $this->fich_fecha_ini_lectiva);
+        $stmt->bindParam(':fich_fecha_fin_lectiva', $this->fich_fecha_fin_lectiva);
         $stmt->bindParam(':fich_id', $this->fich_id);
         $stmt->execute();
         return $stmt;

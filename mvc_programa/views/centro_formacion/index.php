@@ -1,25 +1,37 @@
 <?php
 /**
  * Vista: Listado de Centros de Formación (index.php)
- *
- * Variables esperadas del controlador:
- *   $centros  — Array de centros [['cent_id' => 1, 'cent_nombre' => '...'], ...]
- *   $mensaje  — (Opcional) Mensaje de éxito
- *   $error    — (Opcional) Mensaje de error
  */
+
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
 
-// --- Datos de prueba (eliminar cuando el controlador los proporcione) ---
-$centros = $centros ?? [
-    ['cent_id' => 1, 'cent_nombre' => 'Centro de Gestión de Mercados, Logística y TIC'],
-    ['cent_id' => 2, 'cent_nombre' => 'Centro de Tecnologías del Transporte'],
-    ['cent_id' => 3, 'cent_nombre' => 'Centro de Manufactura en Textil y Cuero'],
-];
-$mensaje = $mensaje ?? null;
-$error = $error ?? null;
-// --- Fin datos de prueba ---
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/CentroFormacionController.php';
+
+$controller = new CentroFormacionController();
+
+// Variables para mensajes
+$mensaje = $_GET['mensaje'] ?? null;
+$error = $_GET['error'] ?? null;
+
+// Procesar eliminación
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $resultado = $controller->delete($_POST['cent_id']);
+    
+    if ($resultado['success']) {
+        $mensaje = $resultado['mensaje'];
+    } else {
+        $error = $resultado['error'];
+    }
+}
+
+// Obtener todos los centros
+$centros = $controller->index();
 
 $title = 'Gestión de Centros de Formación';
 $breadcrumb = [
@@ -28,16 +40,7 @@ $breadcrumb = [
 ];
 
 // Incluir el header según el rol
-if ($rol === 'instructor') {
-    include __DIR__ . '/../layout/header_instructor.php';
-} else {
-    // Incluir el header seg�n el rol
-if ($rol === 'instructor') {
-    include __DIR__ . '/../layout/header_instructor.php';
-} else {
-    include __DIR__ . '/../layout/header_coordinador.php';
-}
-}
+includeRoleHeader($rol);
 ?>
 
         <!-- Page Header -->
@@ -49,7 +52,6 @@ if ($rol === 'instructor') {
                 Registrar Centro
             </a>
             <?php endif; ?>
-        </div>
         </div>
 
         <!-- Alerts -->

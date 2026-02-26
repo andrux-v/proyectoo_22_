@@ -1,51 +1,66 @@
 <?php
 /**
  * Vista: Listado de Coordinaciones (index.php)
- *
- * Variables esperadas del controlador:
- *   $coordinaciones — Array de coordinaciones [['coord_id' => 1, 'coord_nombre' => '...', 'CENTRO_FORMACION_cent_id' => 1, 'cent_nombre' => '...'], ...]
- *   $rol            — 'coordinador' | 'instructor'
- *   $mensaje        — (Opcional) Mensaje de éxito
- *   $error          — (Opcional) Mensaje de error
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
-// --- Datos de prueba (eliminar cuando el controlador los proporcione) ---
-$coordinaciones = $coordinaciones ?? [
-    ['coord_id' => 1, 'coord_nombre' => 'Coordinación Académica', 'CENTRO_FORMACION_cent_id' => 1, 'cent_nombre' => 'Centro de Gestión de Mercados, Logística y TIC'],
-    ['coord_id' => 2, 'coord_nombre' => 'Coordinación de Formación Profesional', 'CENTRO_FORMACION_cent_id' => 1, 'cent_nombre' => 'Centro de Gestión de Mercados, Logística y TIC'],
-    ['coord_id' => 3, 'coord_nombre' => 'Coordinación de Bienestar', 'CENTRO_FORMACION_cent_id' => 2, 'cent_nombre' => 'Centro de Tecnologías del Transporte'],
-];
-$mensaje = $mensaje ?? null;
-$error = $error ?? null;
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/CoordinacionController.php';
+
+$controller = new CoordinacionController();
+
+// Variables para mensajes
+$mensaje = $_GET['mensaje'] ?? null;
+$error = $_GET['error'] ?? null;
+
+// Procesar eliminación
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $resultado = $controller->delete($_POST['coord_id']);
+    
+    if ($resultado['success']) {
+        $mensaje = $resultado['mensaje'];
+    } else {
+        $error = $resultado['error'];
+    }
+}
+
+// Obtener todas las coordinaciones
+$coordinaciones = $controller->index();
 
 $title = 'Gestión de Coordinaciones';
+
+// Determinar URL del dashboard según el rol
+$dashboard_url = '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php';
+if ($rol === 'instructor') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php';
+} elseif ($rol === 'centro') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/centro_formacion/dashboard.php';
+}
+
 $breadcrumb = [
-    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
+    ['label' => 'Dashboard', 'url' => $dashboard_url],
     ['label' => 'Coordinaciones'],
 ];
 
-// Incluir el header seg�n el rol
-if ($rol === 'instructor') {
-    include __DIR__ . '/../layout/header_instructor.php';
-} else {
-    include __DIR__ . '/../layout/header_coordinador.php';
-}
+// Incluir el header según el rol
+includeRoleHeader($rol);
 ?>
 
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">Gestión de Coordinaciones</h1>
-            <?php if ($rol === 'coordinador'): ?>
+            <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
             <a href="<?php echo addRolParam('crear.php', $rol); ?>" class="btn btn-primary">
                 <i data-lucide="plus"></i>
                 Registrar Coordinación
             </a>
             <?php endif; ?>
-        </div>
         </div>
 
         <!-- Alerts -->
@@ -80,18 +95,18 @@ if ($rol === 'instructor') {
                         <?php foreach ($coordinaciones as $coordinacion): ?>
                         <tr>
                             <td><span class="table-id"><?php echo htmlspecialchars($coordinacion['coord_id']); ?></span></td>
-                            <td><?php echo htmlspecialchars($coordinacion['coord_nombre']); ?></td>
+                            <td><?php echo htmlspecialchars($coordinacion['coord_descripcion']); ?></td>
                             <td><?php echo htmlspecialchars($coordinacion['cent_nombre'] ?? 'N/A'); ?></td>
                             <td>
                                 <div class="table-actions">
                                     <a href="<?php echo addRolParam('ver.php?id=' . $coordinacion['coord_id'], $rol); ?>" class="action-btn view-btn" title="Ver detalle">
                                         <i data-lucide="eye"></i>
                                     </a>
-                                    <?php if ($rol === 'coordinador'): ?>
+                                    <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                                     <a href="<?php echo addRolParam('editar.php?id=' . $coordinacion['coord_id'], $rol); ?>" class="action-btn edit-btn" title="Editar coordinación">
                                         <i data-lucide="pencil-line"></i>
                                     </a>
-                                    <button type="button" class="action-btn delete-btn" title="Eliminar coordinación" onclick="confirmDelete(<?php echo $coordinacion['coord_id']; ?>, '<?php echo htmlspecialchars(addslashes($coordinacion['coord_nombre']), ENT_QUOTES); ?>')">
+                                    <button type="button" class="action-btn delete-btn" title="Eliminar coordinación" onclick="confirmDelete(<?php echo $coordinacion['coord_id']; ?>, '<?php echo htmlspecialchars(addslashes($coordinacion['coord_descripcion']), ENT_QUOTES); ?>')">
                                         <i data-lucide="trash-2"></i>
                                     </button>
                                     <?php endif; ?>
@@ -109,7 +124,7 @@ if ($rol === 'instructor') {
                     </div>
                     <div class="table-empty-title">No hay coordinaciones registradas</div>
                     <div class="table-empty-text">
-                        <?php if ($rol === 'coordinador'): ?>
+                        <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                         Haz clic en "Registrar Coordinación" para agregar la primera coordinación.
                         <?php else: ?>
                         No se encontraron coordinaciones en el sistema.

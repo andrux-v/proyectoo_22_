@@ -3,13 +3,28 @@
  * Vista: Detalle de Instructor (ver.php)
  */
 
+require_once __DIR__ . '/../../controller/InstructorController.php';
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
-// --- Datos de prueba ---
-$rol = $rol ?? 'coordinador';
-$instructor = $instructor ?? ['inst_id' => 1, 'inst_nombre' => 'Juan', 'inst_apellidos' => 'Pérez', 'inst_correo' => 'juan@sena.edu.co', 'inst_telefono' => '3001234567'];
-// --- Fin datos de prueba ---
+
+$controller = new InstructorController();
+
+// Obtener ID del instructor
+$inst_id = $_GET['id'] ?? null;
+
+if (!$inst_id) {
+    header('Location: index.php?error=' . urlencode('ID de instructor no especificado'));
+    exit;
+}
+
+// Obtener datos del instructor
+$instructor = $controller->show($inst_id);
+
+if (!$instructor) {
+    header('Location: index.php?error=' . urlencode('Instructor no encontrado'));
+    exit;
+}
 
 $title = 'Detalle de Instructor';
 $breadcrumb = [
@@ -18,7 +33,7 @@ $breadcrumb = [
     ['label' => 'Detalle'],
 ];
 
-// Incluir el header seg�n el rol
+// Incluir el header seg�n el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
 } else {
@@ -38,7 +53,7 @@ if ($rol === 'instructor') {
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Nombres</div>
-                    <div class="detail-value"><?php echo htmlspecialchars($instructor['inst_nombre']); ?></div>
+                    <div class="detail-value"><?php echo htmlspecialchars($instructor['inst_nombres']); ?></div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Apellidos</div>
@@ -51,6 +66,10 @@ if ($rol === 'instructor') {
                 <div class="detail-row">
                     <div class="detail-label">Teléfono</div>
                     <div class="detail-value"><?php echo htmlspecialchars($instructor['inst_telefono']); ?></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Centro de Formación</div>
+                    <div class="detail-value"><?php echo htmlspecialchars($instructor['cent_nombre'] ?? 'N/A'); ?></div>
                 </div>
             </div>
             <div class="detail-card-footer">

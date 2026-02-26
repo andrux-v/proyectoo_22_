@@ -4,12 +4,16 @@ class CentroFormacionModel
 {
     private $cent_id;
     private $cent_nombre;
+    private $cent_correo;
+    private $cent_password;
     private $db;
 
-    public function __construct($cent_id, $cent_nombre)
+    public function __construct($cent_id, $cent_nombre, $cent_correo = null, $cent_password = null)
     {
         $this->setCentId($cent_id);
         $this->setCentNombre($cent_nombre);
+        $this->setCentCorreo($cent_correo);
+        $this->setCentPassword($cent_password);
         $this->db = Conexion::getConnect();
     }
     //getters 
@@ -22,6 +26,14 @@ class CentroFormacionModel
     {
         return $this->cent_nombre;
     }
+    public function getCentCorreo()
+    {
+        return $this->cent_correo;
+    }
+    public function getCentPassword()
+    {
+        return $this->cent_password;
+    }
 
     //setters 
     public function setCentId($cent_id)
@@ -32,15 +44,30 @@ class CentroFormacionModel
     {
         $this->cent_nombre = $cent_nombre;
     }
+    public function setCentCorreo($cent_correo)
+    {
+        $this->cent_correo = $cent_correo;
+    }
+    public function setCentPassword($cent_password)
+    {
+        $this->cent_password = $cent_password;
+    }
     //crud
     public function create()
     {
-        $query = "INSERT INTO centro_formacion (cent_nombre) 
-        VALUES (:cent_nombre)";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':cent_nombre', $this->cent_nombre);
-        $stmt->execute();
-        return $this->db->lastInsertId();
+        try {
+            $query = "INSERT INTO centro_formacion (cent_nombre, cent_correo, cent_password) 
+            VALUES (:cent_nombre, :cent_correo, :cent_password)";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':cent_nombre', $this->cent_nombre);
+            $stmt->bindParam(':cent_correo', $this->cent_correo);
+            $stmt->bindParam(':cent_password', $this->cent_password);
+            $stmt->execute();
+            return $this->db->lastInsertId();
+        } catch (PDOException $e) {
+            error_log("Error en CentroFormacionModel::create - " . $e->getMessage());
+            throw $e;
+        }
     }
     public function read()
     {
@@ -59,10 +86,18 @@ class CentroFormacionModel
     }
     public function update()
     {
-        $query = "UPDATE centro_formacion SET cent_nombre = :cent_nombre WHERE cent_id = :cent_id";
+        $query = "UPDATE centro_formacion 
+                  SET cent_nombre = :cent_nombre, 
+                      cent_correo = :cent_correo" . 
+                      ($this->cent_password ? ", cent_password = :cent_password" : "") . 
+                  " WHERE cent_id = :cent_id";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':cent_nombre', $this->cent_nombre);
+        $stmt->bindParam(':cent_correo', $this->cent_correo);
         $stmt->bindParam(':cent_id', $this->cent_id);
+        if ($this->cent_password) {
+            $stmt->bindParam(':cent_password', $this->cent_password);
+        }
         $stmt->execute();
         return $stmt;
     }

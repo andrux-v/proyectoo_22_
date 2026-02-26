@@ -32,7 +32,7 @@ include __DIR__ . '/../layout/header_instructor.php';
     .dashboard-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-        border-color: #667eea;
+        border-color: #39A900;
     }
     .dashboard-card-icon {
         width: 56px;
@@ -42,7 +42,7 @@ include __DIR__ . '/../layout/header_instructor.php';
         align-items: center;
         justify-content: center;
         margin-bottom: 16px;
-        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        background: linear-gradient(135deg, #39A900 0%, #007832 100%);
         color: white;
     }
     .dashboard-card-title {
@@ -58,7 +58,7 @@ include __DIR__ . '/../layout/header_instructor.php';
         line-height: 1.5;
     }
     .welcome-banner {
-        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        background: linear-gradient(135deg, #39A900 0%, #007832 100%);
         color: white;
         padding: 32px;
         border-radius: 12px;
@@ -94,64 +94,25 @@ include __DIR__ . '/../layout/header_instructor.php';
 </style>
 
 <div class="welcome-banner">
-    <h1>Bienvenido, Instructor</h1>
+    <h1>Bienvenido, <?php echo htmlspecialchars($_SESSION['instructor_nombre'] ?? 'Instructor'); ?></h1>
     <p>Panel de consulta de información académica</p>
 </div>
 
-<div class="info-banner">
-    <i data-lucide="info" class="info-banner-icon" style="width: 24px; height: 24px;"></i>
-    <p class="info-banner-text">
-        Este panel es de solo lectura. Puede consultar su información académica pero no realizar modificaciones.
-    </p>
-</div>
-
 <div class="dashboard-grid">
-    <a href="/proyectoo_22_/mvc_programa/views/instructor/mis_asignaciones.php" class="dashboard-card">
+    <a href="/proyectoo_22_/mvc_programa/views/instructor/index.php?rol=instructor" class="dashboard-card">
         <div class="dashboard-card-icon">
-            <i data-lucide="clipboard-list" style="width: 28px; height: 28px;"></i>
+            <i data-lucide="user" style="width: 28px; height: 28px;"></i>
+        </div>
+        <h3 class="dashboard-card-title">Mis Datos</h3>
+        <p class="dashboard-card-description">Ver y consultar mi información personal</p>
+    </a>
+
+    <a href="/proyectoo_22_/mvc_programa/views/asignacion/index.php?rol=instructor" class="dashboard-card">
+        <div class="dashboard-card-icon">
+            <i data-lucide="calendar" style="width: 28px; height: 28px;"></i>
         </div>
         <h3 class="dashboard-card-title">Mis Asignaciones</h3>
-        <p class="dashboard-card-description">Ver todas mis asignaciones académicas</p>
-    </a>
-
-    <a href="/proyectoo_22_/mvc_programa/views/instructor/horarios.php" class="dashboard-card">
-        <div class="dashboard-card-icon">
-            <i data-lucide="clock" style="width: 28px; height: 28px;"></i>
-        </div>
-        <h3 class="dashboard-card-title">Mis Horarios</h3>
-        <p class="dashboard-card-description">Consultar horarios de clases</p>
-    </a>
-
-    <a href="/proyectoo_22_/mvc_programa/views/instructor/fichas.php" class="dashboard-card">
-        <div class="dashboard-card-icon">
-            <i data-lucide="book-open" style="width: 28px; height: 28px;"></i>
-        </div>
-        <h3 class="dashboard-card-title">Mis Fichas</h3>
-        <p class="dashboard-card-description">Ver fichas asignadas</p>
-    </a>
-
-    <a href="/proyectoo_22_/mvc_programa/views/instructor/programas.php" class="dashboard-card">
-        <div class="dashboard-card-icon">
-            <i data-lucide="graduation-cap" style="width: 28px; height: 28px;"></i>
-        </div>
-        <h3 class="dashboard-card-title">Programas</h3>
-        <p class="dashboard-card-description">Consultar programas de formación</p>
-    </a>
-
-    <a href="/proyectoo_22_/mvc_programa/views/instructor/competencias.php" class="dashboard-card">
-        <div class="dashboard-card-icon">
-            <i data-lucide="award" style="width: 28px; height: 28px;"></i>
-        </div>
-        <h3 class="dashboard-card-title">Competencias</h3>
-        <p class="dashboard-card-description">Ver competencias académicas</p>
-    </a>
-
-    <a href="/proyectoo_22_/mvc_programa/views/instructor/ambientes.php" class="dashboard-card">
-        <div class="dashboard-card-icon">
-            <i data-lucide="monitor" style="width: 28px; height: 28px;"></i>
-        </div>
-        <h3 class="dashboard-card-title">Ambientes</h3>
-        <p class="dashboard-card-description">Consultar ambientes disponibles</p>
+        <p class="dashboard-card-description">Ver mi calendario de asignaciones académicas</p>
     </a>
 </div>
 

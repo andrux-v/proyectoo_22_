@@ -19,7 +19,7 @@ $programas = $programas ?? [
     ['prog_codigo' => '228106', 'prog_denominacion' => 'Análisis y Desarrollo de Software'],
 ];
 $instructores = $instructores ?? [
-    ['inst_id' => 1, 'inst_nombre' => 'Juan', 'inst_apellidos' => 'Pérez'],
+    ['inst_id' => 1, 'inst_nombres' => 'Juan', 'inst_apellidos' => 'Pérez'],
 ];
 $errores = $errores ?? [];
 // --- Fin datos de prueba ---
@@ -31,7 +31,7 @@ $breadcrumb = [
     ['label' => 'Editar'],
 ];
 
-// Incluir el header seg�n el rol
+// Incluir el header seg�n el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
 } else {
@@ -129,7 +129,7 @@ endforeach; ?>
                                     value="<?php echo $inst['inst_id']; ?>"
                                     <?php echo($ficha['INSTRUCTOR_inst_id_lider'] == $inst['inst_id']) ? 'selected' : ''; ?>
                                 >
-                                    <?php echo htmlspecialchars($inst['inst_nombre'] . ' ' . $inst['inst_apellidos']); ?>
+                                    <?php echo htmlspecialchars($inst['inst_nombres'] . ' ' . $inst['inst_apellidos']); ?>
                                 </option>
                             <?php
 endforeach; ?>

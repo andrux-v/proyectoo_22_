@@ -8,9 +8,10 @@ class InstructorModel
     private $inst_correo;
     private $inst_telefono;
     private $CENTRO_FORMACION_cent_id;
+    private $inst_password;
     private $db;
 
-    public function __construct($inst_id, $inst_nombres, $inst_apellidos, $inst_correo, $inst_telefono, $CENTRO_FORMACION_cent_id)
+    public function __construct($inst_id, $inst_nombres, $inst_apellidos, $inst_correo, $inst_telefono, $CENTRO_FORMACION_cent_id, $inst_password = null)
     {
         $this->setInstId($inst_id);
         $this->setInstNombres($inst_nombres);
@@ -18,6 +19,7 @@ class InstructorModel
         $this->setInstCorreo($inst_correo);
         $this->setInstTelefono($inst_telefono);
         $this->setCentroFormacionCentId($CENTRO_FORMACION_cent_id);
+        $this->setInstPassword($inst_password);
         $this->db = Conexion::getConnect();
     }
     //getters 
@@ -46,6 +48,10 @@ class InstructorModel
     {
         return $this->CENTRO_FORMACION_cent_id;
     }
+    public function getInstPassword()
+    {
+        return $this->inst_password;
+    }
 
     //setters 
     public function setInstId($inst_id)
@@ -72,17 +78,22 @@ class InstructorModel
     {
         $this->CENTRO_FORMACION_cent_id = $CENTRO_FORMACION_cent_id;
     }
+    public function setInstPassword($inst_password)
+    {
+        $this->inst_password = $inst_password;
+    }
     //crud
     public function create()
     {
-        $query = "INSERT INTO instructor (inst_nombres, inst_apellidos, inst_correo, inst_telefono, CENTRO_FORMACION_cent_id) 
-        VALUES (:inst_nombres, :inst_apellidos, :inst_correo, :inst_telefono, :CENTRO_FORMACION_cent_id)";
+        $query = "INSERT INTO instructor (inst_nombres, inst_apellidos, inst_correo, inst_telefono, CENTRO_FORMACION_cent_id, inst_password) 
+        VALUES (:inst_nombres, :inst_apellidos, :inst_correo, :inst_telefono, :CENTRO_FORMACION_cent_id, :inst_password)";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':inst_nombres', $this->inst_nombres);
         $stmt->bindParam(':inst_apellidos', $this->inst_apellidos);
         $stmt->bindParam(':inst_correo', $this->inst_correo);
         $stmt->bindParam(':inst_telefono', $this->inst_telefono);
         $stmt->bindParam(':CENTRO_FORMACION_cent_id', $this->CENTRO_FORMACION_cent_id);
+        $stmt->bindParam(':inst_password', $this->inst_password);
         $stmt->execute();
         return $this->db->lastInsertId();
     }
@@ -103,13 +114,14 @@ class InstructorModel
     }
     public function update()
     {
-        $query = "UPDATE instructor SET inst_nombres = :inst_nombres, inst_apellidos = :inst_apellidos, inst_correo = :inst_correo, inst_telefono = :inst_telefono, CENTRO_FORMACION_cent_id = :CENTRO_FORMACION_cent_id WHERE inst_id = :inst_id";
+        $query = "UPDATE instructor SET inst_nombres = :inst_nombres, inst_apellidos = :inst_apellidos, inst_correo = :inst_correo, inst_telefono = :inst_telefono, CENTRO_FORMACION_cent_id = :CENTRO_FORMACION_cent_id, inst_password = :inst_password WHERE inst_id = :inst_id";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':inst_nombres', $this->inst_nombres);
         $stmt->bindParam(':inst_apellidos', $this->inst_apellidos);
         $stmt->bindParam(':inst_correo', $this->inst_correo);
         $stmt->bindParam(':inst_telefono', $this->inst_telefono);
         $stmt->bindParam(':CENTRO_FORMACION_cent_id', $this->CENTRO_FORMACION_cent_id);
+        $stmt->bindParam(':inst_password', $this->inst_password);
         $stmt->bindParam(':inst_id', $this->inst_id);
         $stmt->execute();
         return $stmt;

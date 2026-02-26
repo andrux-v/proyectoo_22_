@@ -85,7 +85,7 @@ class AsignacionModel
     //crud
     public function create()
     {
-        $query = "INSERT INTO asignacion (INSTRUCTOR_inst_id, asig_fecha_ini, asig_fecha_fin, FICHA_fich_id, AMBIENTE_amb_id, COMPETENCIA_comp_id) 
+        $query = "INSERT INTO asignacion (instructor_inst_id, asig_fecha_ini, asig_fecha_fin, ficha_fich_id, ambiente_amb_id, competencia_comp_id) 
         VALUES (:instructor_inst_id, :asig_fecha_ini, :asig_fecha_fin, :ficha_fich_id, :ambiente_amb_id, :competencia_comp_id)";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':instructor_inst_id', $this->instructor_inst_id);
@@ -99,7 +99,7 @@ class AsignacionModel
     }
     public function read()
     {
-        $sql = "SELECT * FROM asignacion WHERE INSTRUCTOR_inst_id = :instructor_id";
+        $sql = "SELECT * FROM asignacion WHERE instructor_inst_id = :instructor_id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':instructor_id' => $this->instructor_inst_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -114,7 +114,7 @@ class AsignacionModel
     }
     public function update()
     {
-        $query = "UPDATE asignacion SET INSTRUCTOR_inst_id = :instructor_inst_id, asig_fecha_ini = :asig_fecha_ini, asig_fecha_fin = :asig_fecha_fin, FICHA_fich_id = :ficha_fich_id, AMBIENTE_amb_id = :ambiente_amb_id, COMPETENCIA_comp_id = :competencia_comp_id WHERE ASIG_ID = :asig_id";
+        $query = "UPDATE asignacion SET instructor_inst_id = :instructor_inst_id, asig_fecha_ini = :asig_fecha_ini, asig_fecha_fin = :asig_fecha_fin, ficha_fich_id = :ficha_fich_id, ambiente_amb_id = :ambiente_amb_id, competencia_comp_id = :competencia_comp_id WHERE asig_id = :asig_id";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':instructor_inst_id', $this->instructor_inst_id);
         $stmt->bindParam(':asig_fecha_ini', $this->asig_fecha_ini);
@@ -128,7 +128,7 @@ class AsignacionModel
     }
     public function delete()
     {
-        $query = "DELETE FROM asignacion WHERE ASIG_ID = :asig_id";
+        $query = "DELETE FROM asignacion WHERE asig_id = :asig_id";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':asig_id', $this->asig_id);
         $stmt->execute();

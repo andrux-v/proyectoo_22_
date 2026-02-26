@@ -117,7 +117,7 @@ class CompetenciaController
     {
         try {
             // Verificar si la competencia está siendo usada en asignaciones
-            $query = "SELECT COUNT(*) as count FROM asignacion WHERE COMPETENCIA_comp_id = :comp_id";
+            $query = "SELECT COUNT(*) as count FROM asignacion WHERE competencia_comp_id = :comp_id";
             $stmt = $this->db->prepare($query);
             $stmt->execute([':comp_id' => $comp_id]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -127,7 +127,7 @@ class CompetenciaController
             }
 
             // Verificar si está asociada a programas
-            $query = "SELECT COUNT(*) as count FROM competxprograma WHERE COMPETENCIA_comp_id = :comp_id";
+            $query = "SELECT COUNT(*) as count FROM competxprograma WHERE competencia_comp_id = :comp_id";
             $stmt = $this->db->prepare($query);
             $stmt->execute([':comp_id' => $comp_id]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -145,6 +145,31 @@ class CompetenciaController
             error_log("Error en CompetenciaController::delete - " . $e->getMessage());
             return ['success' => false, 'error' => 'Error al eliminar la competencia'];
         }
+    }
+
+    /**
+     * Mostrar formulario de creación
+     */
+    public function showCreate()
+    {
+        $rol = $_GET['rol'] ?? 'coordinador';
+        include __DIR__ . '/../views/competencia/crear.php';
+    }
+
+    /**
+     * Mostrar formulario de edición
+     */
+    public function showEdit($comp_id)
+    {
+        $competencia = $this->show($comp_id);
+        
+        if (!$competencia) {
+            header('Location: index.php?error=' . urlencode('Competencia no encontrada'));
+            exit;
+        }
+        
+        $rol = $_GET['rol'] ?? 'coordinador';
+        include __DIR__ . '/../views/competencia/editar.php';
     }
 
     /**

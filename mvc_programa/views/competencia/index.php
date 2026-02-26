@@ -34,22 +34,27 @@ $mensaje = $_GET['mensaje'] ?? $mensaje ?? null;
 $error = $_GET['error'] ?? $error ?? null;
 
 $title = 'Competencias';
+
+// Determinar URL del dashboard según el rol
+$dashboard_url = '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php';
+if ($rol === 'instructor') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php';
+} elseif ($rol === 'centro') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/centro_formacion/dashboard.php';
+}
+
 $breadcrumb = [
-    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
+    ['label' => 'Dashboard', 'url' => $dashboard_url],
     ['label' => 'Competencias'],
 ];
 
 // Incluir el header según el rol
-if ($rol === 'instructor') {
-    include __DIR__ . '/../layout/header_instructor.php';
-} else {
-    include __DIR__ . '/../layout/header_coordinador.php';
-}
+includeRoleHeader($rol);
 ?>
 
         <div class="page-header">
             <h1 class="page-title">Competencias</h1>
-            <?php if ($rol === 'coordinador'): ?>
+            <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                 <a href="<?php echo addRolParam('crear.php', $rol); ?>" class="btn btn-primary">
                     <i data-lucide="plus"></i>
                     Registrar Competencia
@@ -99,7 +104,7 @@ endif; ?>
                                     <a href="<?php echo addRolParam('ver.php?id=' . $comp['comp_id'], $rol); ?>" class="action-btn view-btn" title="Ver detalle">
                                         <i data-lucide="eye"></i>
                                     </a>
-                                    <?php if ($rol === 'coordinador'): ?>
+                                    <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                                         <a href="<?php echo addRolParam('editar.php?id=' . $comp['comp_id'], $rol); ?>" class="action-btn edit-btn" title="Editar competencia">
                                             <i data-lucide="pencil-line"></i>
                                         </a>
@@ -123,13 +128,11 @@ else: ?>
                     </div>
                     <div class="table-empty-title">No hay competencias registradas</div>
                     <div class="table-empty-text">
-                        <?php if ($rol === 'coordinador'): ?>
+                        <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                             Haz clic en "Registrar Competencia" para agregar la primera.
-                        <?php
-    else: ?>
+                        <?php else: ?>
                             No se encontraron competencias en el sistema.
-                        <?php
-    endif; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php
@@ -137,7 +140,7 @@ endif; ?>
         </div>
 
 <!-- Delete Confirmation Modal -->
-<?php if ($rol === 'coordinador'): ?>
+<?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
 <div class="modal-overlay" id="deleteModal">
     <div class="modal">
         <div class="modal-body">

@@ -4,15 +4,15 @@ class ProgramaModel
 {
     private $prog_codigo;
     private $prog_denominacion;
-    private $TIT_PROGRAMA_titpro_id;
+    private $tit_programa_titpro_id;
     private $prog_tipo;
     private $db;
 
-    public function __construct($prog_codigo, $prog_denominacion, $TIT_PROGRAMA_titpro_id, $prog_tipo)
+    public function __construct($prog_codigo, $prog_denominacion, $tit_programa_titpro_id, $prog_tipo)
     {
         $this->setProgCodigo($prog_codigo);
         $this->setProgDenominacion($prog_denominacion);
-        $this->setTitProgramaTitproId($TIT_PROGRAMA_titpro_id);
+        $this->setTitProgramaTitproId($tit_programa_titpro_id);
         $this->setProgTipo($prog_tipo);
         $this->db = Conexion::getConnect();
     }
@@ -28,7 +28,7 @@ class ProgramaModel
     }
     public function getTitProgramaTitproId()
     {
-        return $this->TIT_PROGRAMA_titpro_id;
+        return $this->tit_programa_titpro_id;
     }
     public function getProgTipo()
     {
@@ -44,9 +44,9 @@ class ProgramaModel
     {
         $this->prog_denominacion = $prog_denominacion;
     }
-    public function setTitProgramaTitproId($TIT_PROGRAMA_titpro_id)
+    public function setTitProgramaTitproId($tit_programa_titpro_id)
     {
-        $this->TIT_PROGRAMA_titpro_id = $TIT_PROGRAMA_titpro_id;
+        $this->tit_programa_titpro_id = $tit_programa_titpro_id;
     }
     public function setProgTipo($prog_tipo)
     {
@@ -55,12 +55,12 @@ class ProgramaModel
     //crud
     public function create()
     {
-        $query = "INSERT INTO programa (prog_codigo, prog_denominacion, TIT_PROGRAMA_titpro_id, prog_tipo) 
-        VALUES (:prog_codigo, :prog_denominacion, :TIT_PROGRAMA_titpro_id, :prog_tipo)";
+        $query = "INSERT INTO programa (prog_codigo, prog_denominacion, tit_programa_titpro_id, prog_tipo) 
+        VALUES (:prog_codigo, :prog_denominacion, :tit_programa_titpro_id, :prog_tipo)";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':prog_codigo', $this->prog_codigo);
         $stmt->bindParam(':prog_denominacion', $this->prog_denominacion);
-        $stmt->bindParam(':TIT_PROGRAMA_titpro_id', $this->TIT_PROGRAMA_titpro_id);
+        $stmt->bindParam(':tit_programa_titpro_id', $this->tit_programa_titpro_id);
         $stmt->bindParam(':prog_tipo', $this->prog_tipo);
         $stmt->execute();
         return $this->prog_codigo;
@@ -82,10 +82,10 @@ class ProgramaModel
     }
     public function update()
     {
-        $query = "UPDATE programa SET prog_denominacion = :prog_denominacion, TIT_PROGRAMA_titpro_id = :TIT_PROGRAMA_titpro_id, prog_tipo = :prog_tipo WHERE prog_codigo = :prog_codigo";
+        $query = "UPDATE programa SET prog_denominacion = :prog_denominacion, tit_programa_titpro_id = :tit_programa_titpro_id, prog_tipo = :prog_tipo WHERE prog_codigo = :prog_codigo";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':prog_denominacion', $this->prog_denominacion);
-        $stmt->bindParam(':TIT_PROGRAMA_titpro_id', $this->TIT_PROGRAMA_titpro_id);
+        $stmt->bindParam(':tit_programa_titpro_id', $this->tit_programa_titpro_id);
         $stmt->bindParam(':prog_tipo', $this->prog_tipo);
         $stmt->bindParam(':prog_codigo', $this->prog_codigo);
         $stmt->execute();

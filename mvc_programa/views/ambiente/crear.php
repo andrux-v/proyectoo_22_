@@ -116,28 +116,28 @@ if ($rol === 'instructor') {
                     </div>
 
                     <div class="form-group">
-                        <label for="SEDE_sede_id" class="form-label">
+                        <label for="sede_sede_id" class="form-label">
                             Sede <span class="required">*</span>
                         </label>
                         <select
-                            id="SEDE_sede_id"
-                            name="SEDE_sede_id"
-                            class="form-input <?php echo isset($errores['SEDE_sede_id']) ? 'input-error' : ''; ?>"
+                            id="sede_sede_id"
+                            name="sede_sede_id"
+                            class="form-input <?php echo isset($errores['sede_sede_id']) ? 'input-error' : ''; ?>"
                             required
                         >
                             <option value="">Seleccione una Sede</option>
                             <?php foreach ($sedes as $sede): ?>
                                 <option
                                     value="<?php echo $sede['sede_id']; ?>"
-                                    <?php echo(isset($old['SEDE_sede_id']) && $old['SEDE_sede_id'] == $sede['sede_id']) ? 'selected' : ''; ?>
+                                    <?php echo(isset($old['sede_sede_id']) && $old['sede_sede_id'] == $sede['sede_id']) ? 'selected' : ''; ?>
                                 >
                                     <?php echo htmlspecialchars($sede['sede_nombre']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                         <div class="form-error <?php echo isset($errores['SEDE_sede_id']) ? 'visible' : ''; ?>" id="errorSede">
+                         <div class="form-error <?php echo isset($errores['sede_sede_id']) ? 'visible' : ''; ?>" id="errorSede">
                             <i data-lucide="alert-circle"></i>
-                            <span><?php echo htmlspecialchars($errores['SEDE_sede_id'] ?? 'Debe seleccionar una sede.'); ?></span>
+                            <span><?php echo htmlspecialchars($errores['sede_sede_id'] ?? 'Debe seleccionar una sede.'); ?></span>
                         </div>
                     </div>
 

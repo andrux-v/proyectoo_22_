@@ -47,12 +47,12 @@ class AmbienteModel
     //crud
     public function create()
     {
-        $query = "INSERT INTO ambiente (amb_id, amb_nombre, SEDE_sede_id) 
-        VALUES (:amb_id, :amb_nombre, :SEDE_sede_id)";
+        $query = "INSERT INTO ambiente (amb_id, amb_nombre, sede_sede_id) 
+        VALUES (:amb_id, :amb_nombre, :sede_sede_id)";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':amb_id', $this->amb_id);
         $stmt->bindParam(':amb_nombre', $this->amb_nombre);
-        $stmt->bindParam(':SEDE_sede_id', $this->SEDE_sede_id);
+        $stmt->bindParam(':sede_sede_id', $this->SEDE_sede_id);
         $stmt->execute();
         return $stmt;
     }
@@ -73,10 +73,10 @@ class AmbienteModel
     }
     public function update()
     {
-        $query = "UPDATE ambiente SET amb_nombre = :amb_nombre, SEDE_sede_id = :SEDE_sede_id WHERE amb_id = :amb_id";
+        $query = "UPDATE ambiente SET amb_nombre = :amb_nombre, sede_sede_id = :sede_sede_id WHERE amb_id = :amb_id";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':amb_nombre', $this->amb_nombre);
-        $stmt->bindParam(':SEDE_sede_id', $this->SEDE_sede_id);
+        $stmt->bindParam(':sede_sede_id', $this->SEDE_sede_id);
         $stmt->bindParam(':amb_id', $this->amb_id);
         $stmt->execute();
         return $stmt;

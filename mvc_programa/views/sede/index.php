@@ -1,54 +1,66 @@
 <?php
 /**
  * Vista: Listado de Sedes (index.php)
- *
- * Variables esperadas del controlador:
- *   $sedes    — Array de sedes [['sede_id' => 1, 'sede_nombre' => '...'], ...]
- *   $rol      — 'coordinador' | 'instructor'
- *   $mensaje  — (Opcional) Mensaje de éxito
- *   $error    — (Opcional) Mensaje de error
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
-// --- Datos de prueba (eliminar cuando el controlador los proporcione) ---
-$rol = $rol ?? 'coordinador'; // Cambiar a 'instructor' para probar restricciones
-$sedes = $sedes ?? [
-    ['sede_id' => 1, 'sede_nombre' => 'Centro de Gestión Industrial'],
-    ['sede_id' => 2, 'sede_nombre' => 'Centro de Tecnologías del Transporte'],
-    ['sede_id' => 3, 'sede_nombre' => 'Centro de Manufactura en Textil y Cuero'],
-    ['sede_id' => 4, 'sede_nombre' => 'Centro Metalmecánico'],
-    ['sede_id' => 5, 'sede_nombre' => 'Centro de Formación de Talento Humano en Salud'],
-];
-$mensaje = $mensaje ?? null;
-$error = $error ?? null;
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/SedeController.php';
+
+$controller = new SedeController();
+
+// Variables para mensajes
+$mensaje = $_GET['mensaje'] ?? null;
+$error = $_GET['error'] ?? null;
+
+// Procesar eliminación
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $resultado = $controller->delete($_POST['sede_id']);
+    
+    if ($resultado['success']) {
+        $mensaje = $resultado['mensaje'];
+    } else {
+        $error = $resultado['error'];
+    }
+}
+
+// Obtener todas las sedes
+$sedes = $controller->index();
 
 $title = 'Gestión de Sedes';
+
+// Determinar URL del dashboard según el rol
+$dashboard_url = '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php';
+if ($rol === 'instructor') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php';
+} elseif ($rol === 'centro') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/centro_formacion/dashboard.php';
+}
+
 $breadcrumb = [
-    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
+    ['label' => 'Dashboard', 'url' => $dashboard_url],
     ['label' => 'Sedes'],
 ];
 
-// Incluir el header seg�n el rol
-if ($rol === 'instructor') {
-    include __DIR__ . '/../layout/header_instructor.php';
-} else {
-    include __DIR__ . '/../layout/header_coordinador.php';
-}
+// Incluir el header según el rol
+includeRoleHeader($rol);
 ?>
 
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">Gestión de Sedes</h1>
-            <?php if ($rol === 'coordinador'): ?>
-                <a href="crear.php" class="btn btn-primary">
+            <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
+                <a href="<?php echo addRolParam('crear.php', $rol); ?>" class="btn btn-primary">
                     <i data-lucide="plus"></i>
                     Registrar Sede
                 </a>
-            <?php
-endif; ?>
+            <?php endif; ?>
         </div>
 
         <!-- Alerts -->
@@ -87,18 +99,17 @@ endif; ?>
                             <td><?php echo htmlspecialchars($sede['sede_nombre']); ?></td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="ver.php?id=<?php echo $sede['sede_id']; ?>" class="action-btn view-btn" title="Ver detalle">
+                                    <a href="<?php echo addRolParam('ver.php?id=' . $sede['sede_id'], $rol); ?>" class="action-btn view-btn" title="Ver detalle">
                                         <i data-lucide="eye"></i>
                                     </a>
-                                    <?php if ($rol === 'coordinador'): ?>
-                                        <a href="editar.php?id=<?php echo $sede['sede_id']; ?>" class="action-btn edit-btn" title="Editar sede">
+                                    <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
+                                        <a href="<?php echo addRolParam('editar.php?id=' . $sede['sede_id'], $rol); ?>" class="action-btn edit-btn" title="Editar sede">
                                             <i data-lucide="pencil-line"></i>
                                         </a>
                                         <button type="button" class="action-btn delete-btn" title="Eliminar sede" onclick="confirmDelete(<?php echo $sede['sede_id']; ?>, '<?php echo htmlspecialchars(addslashes($sede['sede_nombre']), ENT_QUOTES); ?>')">
                                             <i data-lucide="trash-2"></i>
                                         </button>
-                                    <?php
-        endif; ?>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -115,13 +126,11 @@ else: ?>
                     </div>
                     <div class="table-empty-title">No hay sedes registradas</div>
                     <div class="table-empty-text">
-                        <?php if ($rol === 'coordinador'): ?>
+                        <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                             Haz clic en "Registrar Sede" para agregar la primera sede.
-                        <?php
-    else: ?>
+                        <?php else: ?>
                             No se encontraron sedes en el sistema.
-                        <?php
-    endif; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php
@@ -129,7 +138,7 @@ endif; ?>
         </div>
 
 <!-- Delete Confirmation Modal -->
-<?php if ($rol === 'coordinador'): ?>
+<?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
 <div class="modal-overlay" id="deleteModal">
     <div class="modal">
         <div class="modal-body">

@@ -1,41 +1,67 @@
 <?php
 /**
  * Vista: Registrar Sede (crear.php)
- *
- * Variables esperadas del controlador:
- *   $rol      — 'coordinador' | 'instructor'
- *   $errores  — (Opcional) Array de errores ['sede_nombre' => 'El nombre es requerido']
- *   $old      — (Opcional) Datos anteriores para repoblar el formulario
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
 
 // Redirigir si es instructor (no tiene permisos para crear/editar)
 if ($rol === 'instructor') {
-    header('Location: ' . addRolParam('index.php', $rol));
+    header('Location: /proyectoo_22_/mvc_programa/views/sede/index.php?rol=instructor');
     exit;
 }
-// --- Datos de prueba (eliminar cuando el controlador los proporcione) ---
-$rol = $rol ?? 'coordinador';
-$errores = $errores ?? [];
-$old = $old ?? [];
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/SedeController.php';
+
+$controller = new SedeController();
+
+// Variables para el formulario
+$errores = [];
+$old = [];
+
+// Procesar el formulario
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create') {
+    $resultado = $controller->create($_POST);
+    
+    if ($resultado['success']) {
+        // Redirigir al index con mensaje de éxito
+        $redirectUrl = '/proyectoo_22_/mvc_programa/views/sede/index.php';
+        if ($rol === 'instructor') {
+            $redirectUrl .= '?rol=instructor';
+        }
+        $redirectUrl .= (strpos($redirectUrl, '?') !== false ? '&' : '?') . 'mensaje=' . urlencode($resultado['mensaje']);
+        header('Location: ' . $redirectUrl);
+        exit;
+    } else {
+        $errores = $resultado['errores'];
+        $old = $_POST;
+    }
+}
 
 $title = 'Registrar Sede';
+
+// Determinar URL del dashboard según el rol
+$dashboard_url = '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php';
+if ($rol === 'instructor') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php';
+} elseif ($rol === 'centro') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/centro_formacion/dashboard.php';
+}
+
 $breadcrumb = [
-    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
+    ['label' => 'Dashboard', 'url' => $dashboard_url],
     ['label' => 'Sedes', 'url' => addRolParam('index.php', $rol)],
     ['label' => 'Registrar'],
 ];
 
-// Incluir el header seg�n el rol
-if ($rol === 'instructor') {
-    include __DIR__ . '/../layout/header_instructor.php';
-} else {
-    include __DIR__ . '/../layout/header_coordinador.php';
-}
+// Incluir el header según el rol
+includeRoleHeader($rol);
 ?>
 
         <!-- Page Header -->

@@ -17,7 +17,7 @@ $breadcrumb = $breadcrumb ?? [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title); ?> — SENA Coordinador</title>
-    <link rel="stylesheet" href="/proyectoo_22_/mvc_programa/assets/css/styles.css?v=2.0">
+    <link rel="stylesheet" href="/proyectoo_22_/mvc_programa/assets/css/styles.css?v=2.1">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -51,57 +51,19 @@ $breadcrumb = $breadcrumb ?? [];
             </a>
 
             <div class="sidebar-section-title">Gestión Académica</div>
-            <a href="/proyectoo_22_/mvc_programa/views/centro_formacion/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/centro_formacion/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="building"></i>
-                Centros Formación
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/coordinacion/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/coordinacion/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="users-2"></i>
-                Coordinaciones
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/sede/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/sede/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="building-2"></i>
-                Sedes
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/ambiente/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/ambiente/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="monitor"></i>
-                Ambientes
-            </a>
             <a href="/proyectoo_22_/mvc_programa/views/titulo_programa/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/titulo_programa/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="scroll"></i>
-                Títulos Programa
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/programa/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/programa/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="graduation-cap"></i>
-                Programas
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/competencia/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/competencia/') !== false) ? 'active' : ''; ?>">
                 <i data-lucide="award"></i>
-                Competencias
+                Comp x Programa
             </a>
-            <a href="/proyectoo_22_/mvc_programa/views/competencia_programa/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/competencia_programa/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="link"></i>
-                Comp. x Programa
-            </a>
-
-            <div class="sidebar-section-title">Gestión de Personal</div>
-            <a href="/proyectoo_22_/mvc_programa/views/instructor/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/instructor/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="users"></i>
-                Instructores
-            </a>
-
-            <div class="sidebar-section-title">Asignaciones</div>
             <a href="/proyectoo_22_/mvc_programa/views/ficha/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/ficha/') !== false) ? 'active' : ''; ?>">
                 <i data-lucide="book-open"></i>
                 Fichas
             </a>
-            <a href="/proyectoo_22_/mvc_programa/views/asignacion/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/asignacion/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="clipboard-list"></i>
-                Asignaciones
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/detalle_asignacion/index.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/detalle_asignacion/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="clock"></i>
-                Detalles Asignación
+
+            <div class="sidebar-section-title">Asignaciones</div>
+            <a href="/proyectoo_22_/mvc_programa/views/asignacion/index.php?rol=coordinador" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/asignacion') !== false) ? 'active' : ''; ?>">
+                <i data-lucide="calendar"></i>
+                Calendario de Asignaciones
             </a>
         </nav>
 
@@ -112,13 +74,17 @@ $breadcrumb = $breadcrumb ?? [];
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name">
-                        Coordinador Académico
+                        <?php echo htmlspecialchars($_SESSION['coordinador_nombre'] ?? 'Coordinador'); ?>
                     </div>
                     <div class="sidebar-user-role">
-                        Administrador
+                        Coordinador Académico
                     </div>
                 </div>
             </div>
+            <a href="/proyectoo_22_/mvc_programa/auth/logout.php" class="sidebar-logout-btn">
+                <i data-lucide="log-out"></i>
+                <span>Cerrar Sesión</span>
+            </a>
         </div>
     </aside>
 

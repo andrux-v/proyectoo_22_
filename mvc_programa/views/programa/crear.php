@@ -49,14 +49,16 @@ $titulos = $controller->getTitulosPrograma();
 
 $title = 'Registrar Programa';
 $breadcrumb = [
-    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
+    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : ($rol === 'centro' ? '/proyectoo_22_/mvc_programa/views/centro_formacion/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php')],
     ['label' => 'Programas', 'url' => addRolParam('index.php', $rol)],
     ['label' => 'Registrar'],
 ];
 
-// Incluir el header seg�n el rol
+// Incluir el header según el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
+} elseif ($rol === 'centro') {
+    include __DIR__ . '/../layout/header_centro.php';
 } else {
     include __DIR__ . '/../layout/header_coordinador.php';
 }
@@ -132,29 +134,29 @@ if ($rol === 'instructor') {
                     </div>
 
                     <div class="form-group">
-                        <label for="TIT_PROGRAMA_titpro_id" class="form-label">
+                        <label for="tit_programa_titpro_id" class="form-label">
                             Nivel de Formación <span class="required">*</span>
                         </label>
                         <select
-                            id="TIT_PROGRAMA_titpro_id"
-                            name="TIT_PROGRAMA_titpro_id"
-                            class="form-input <?php echo isset($errores['TIT_PROGRAMA_titpro_id']) ? 'input-error' : ''; ?>"
+                            id="tit_programa_titpro_id"
+                            name="tit_programa_titpro_id"
+                            class="form-input <?php echo isset($errores['tit_programa_titpro_id']) ? 'input-error' : ''; ?>"
                             required
                         >
                             <option value="">Seleccione...</option>
                             <?php foreach ($titulos as $titulo): ?>
                                 <option
                                     value="<?php echo $titulo['titpro_id']; ?>"
-                                    <?php echo(isset($old['TIT_PROGRAMA_titpro_id']) && $old['TIT_PROGRAMA_titpro_id'] == $titulo['titpro_id']) ? 'selected' : ''; ?>
+                                    <?php echo(isset($old['tit_programa_titpro_id']) && $old['tit_programa_titpro_id'] == $titulo['titpro_id']) ? 'selected' : ''; ?>
                                 >
                                     <?php echo htmlspecialchars($titulo['titpro_nombre']); ?>
                                 </option>
                             <?php
 endforeach; ?>
                         </select>
-                         <div class="form-error <?php echo isset($errores['TIT_PROGRAMA_titpro_id']) ? 'visible' : ''; ?>">
+                         <div class="form-error <?php echo isset($errores['tit_programa_titpro_id']) ? 'visible' : ''; ?>">
                             <i data-lucide="alert-circle"></i>
-                            <span><?php echo htmlspecialchars($errores['TIT_PROGRAMA_titpro_id'] ?? 'Requerido.'); ?></span>
+                            <span><?php echo htmlspecialchars($errores['tit_programa_titpro_id'] ?? 'Requerido.'); ?></span>
                         </div>
                     </div>
 

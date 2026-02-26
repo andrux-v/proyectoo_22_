@@ -7,6 +7,17 @@
  *   $breadcrumb  — Array of breadcrumb items: [['label' => 'Inicio', 'url' => '/'], ...]
  */
 
+// Iniciar sesión si no está iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verificar que el instructor esté logueado
+if (!isset($_SESSION['instructor_id'])) {
+    header('Location: /proyectoo_22_/mvc_programa/views/instructor/login.php');
+    exit;
+}
+
 $title = $title ?? 'Panel de Instructor';
 $breadcrumb = $breadcrumb ?? [];
 // NO definir $rol aquí, debe venir de la vista
@@ -17,7 +28,7 @@ $breadcrumb = $breadcrumb ?? [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title); ?> — SENA Instructor</title>
-    <link rel="stylesheet" href="/proyectoo_22_/mvc_programa/assets/css/styles.css?v=2.0">
+    <link rel="stylesheet" href="/proyectoo_22_/mvc_programa/assets/css/styles.css?v=2.1">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -50,53 +61,41 @@ $breadcrumb = $breadcrumb ?? [];
                 Mi Dashboard
             </a>
 
-            <div class="sidebar-section-title">Gestión Académica</div>
-            <a href="/proyectoo_22_/mvc_programa/views/sede/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/sede/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="building-2"></i>
-                Sedes
+            <div class="sidebar-section-title">Mi Información</div>
+            <a href="/proyectoo_22_/mvc_programa/views/instructor/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/instructor/index.php') !== false) ? 'active' : ''; ?>">
+                <i data-lucide="user"></i>
+                Mis Datos
             </a>
-            <a href="/proyectoo_22_/mvc_programa/views/ambiente/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/ambiente/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="monitor"></i>
-                Ambientes
+            <a href="/proyectoo_22_/mvc_programa/views/asignacion/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/asignacion') !== false) ? 'active' : ''; ?>">
+                <i data-lucide="calendar"></i>
+                Mis Asignaciones
             </a>
-            <a href="/proyectoo_22_/mvc_programa/views/programa/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/programa/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="graduation-cap"></i>
-                Programas
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/competencia/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/competencia/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="award"></i>
-                Competencias
-            </a>
-
-            <div class="sidebar-section-title">Mis Asignaciones</div>
-            <a href="/proyectoo_22_/mvc_programa/views/ficha/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/ficha/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="book-open"></i>
-                Fichas
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/asignacion/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/asignacion/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="clipboard-list"></i>
-                Asignaciones
-            </a>
-            <a href="/proyectoo_22_/mvc_programa/views/instructor/index.php?rol=instructor" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/instructor/') !== false) ? 'active' : ''; ?>">
-                <i data-lucide="users"></i>
-                Instructores
+            
+            <div class="sidebar-section-title">Configuración</div>
+            <a href="/proyectoo_22_/mvc_programa/auth/cambiar_password.php" class="sidebar-link">
+                <i data-lucide="key"></i>
+                Cambiar Contraseña
             </a>
         </nav>
 
         <div class="sidebar-footer">
             <div class="sidebar-user">
                 <div class="sidebar-user-avatar">
-                    I
+                    <?php echo strtoupper(substr($_SESSION['instructor_nombre'] ?? 'I', 0, 1)); ?>
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name">
-                        Instructor
+                        <?php echo htmlspecialchars($_SESSION['instructor_nombre'] ?? 'Instructor'); ?>
                     </div>
                     <div class="sidebar-user-role">
-                        Solo Lectura
+                        Instructor
                     </div>
                 </div>
             </div>
+            <a href="/proyectoo_22_/mvc_programa/auth/logout.php" class="sidebar-logout-btn">
+                <i data-lucide="log-out"></i>
+                <span>Cerrar Sesión</span>
+            </a>
         </div>
     </aside>
 

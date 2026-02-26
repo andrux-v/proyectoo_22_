@@ -12,18 +12,18 @@ require_once __DIR__ . '/../../controller/AmbienteController.php';
 
 $controller = new AmbienteController();
 
-// Manejar acciones POST (eliminar)
-$mensaje = null;
-$error = null;
+// Variables para mensajes
+$mensaje = $_GET['mensaje'] ?? null;
+$error = $_GET['error'] ?? null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    if ($_POST['action'] === 'delete' && isset($_POST['amb_id'])) {
-        $resultado = $controller->delete($_POST['amb_id']);
-        if ($resultado['success']) {
-            $mensaje = $resultado['mensaje'];
-        } else {
-            $error = $resultado['error'];
-        }
+// Procesar eliminación
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $resultado = $controller->delete($_POST['amb_id']);
+    
+    if ($resultado['success']) {
+        $mensaje = $resultado['mensaje'];
+    } else {
+        $error = $resultado['error'];
     }
 }
 
@@ -31,28 +31,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 $ambientes = $controller->index();
 
 $title = 'Gestión de Ambientes';
+
+// Determinar URL del dashboard según el rol
+$dashboard_url = '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php';
+if ($rol === 'instructor') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php';
+} elseif ($rol === 'centro') {
+    $dashboard_url = '/proyectoo_22_/mvc_programa/views/centro_formacion/dashboard.php';
+}
+
 $breadcrumb = [
-    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
+    ['label' => 'Dashboard', 'url' => $dashboard_url],
     ['label' => 'Ambientes'],
 ];
 
-// Incluir el header seg�n el rol
-if ($rol === 'instructor') {
-    include __DIR__ . '/../layout/header_instructor.php';
-} else {
-    include __DIR__ . '/../layout/header_coordinador.php';
-}
+// Incluir el header según el rol
+includeRoleHeader($rol);
 ?>
 
         <div class="page-header">
             <h1 class="page-title">Ambientes</h1>
-            <?php if ($rol === 'coordinador'): ?>
+            <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                 <a href="<?php echo addRolParam('crear.php', $rol); ?>" class="btn btn-primary">
                     <i data-lucide="plus"></i>
                     Registrar Ambiente
                 </a>
-            <?php
-endif; ?>
+            <?php endif; ?>
         </div>
 
         <!-- Alerts -->
@@ -95,7 +99,7 @@ endif; ?>
                                     <a href="<?php echo addRolParam('ver.php?id=' . $amb['amb_id'], $rol); ?>" class="action-btn view-btn" title="Ver detalle">
                                         <i data-lucide="eye"></i>
                                     </a>
-                                    <?php if ($rol === 'coordinador'): ?>
+                                    <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                                         <a href="<?php echo addRolParam('editar.php?id=' . $amb['amb_id'], $rol); ?>" class="action-btn edit-btn" title="Editar ambiente">
                                             <i data-lucide="pencil-line"></i>
                                         </a>
@@ -119,13 +123,11 @@ else: ?>
                     </div>
                     <div class="table-empty-title">No hay ambientes registrados</div>
                     <div class="table-empty-text">
-                        <?php if ($rol === 'coordinador'): ?>
+                        <?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
                             Haz clic en "Registrar Ambiente" para agregar el primero.
-                        <?php
-    else: ?>
+                        <?php else: ?>
                             No se encontraron ambientes en el sistema.
-                        <?php
-    endif; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php
@@ -133,7 +135,7 @@ endif; ?>
         </div>
 
 <!-- Delete Confirmation Modal -->
-<?php if ($rol === 'coordinador'): ?>
+<?php if ($rol === 'coordinador' || $rol === 'centro'): ?>
 <div class="modal-overlay" id="deleteModal">
     <div class="modal">
         <div class="modal-body">

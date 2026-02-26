@@ -1,35 +1,45 @@
 <?php
 /**
  * Vista: Listado de Títulos de Programa (index.php)
- *
- * Variables esperadas del controlador:
- *   $titulos  — Array de títulos [['tibro_id' => 1, 'tibro_nombre' => '...'], ...]
- *   $rol      — 'coordinador' | 'instructor'
- *   $mensaje  — (Opcional) Mensaje de éxito
- *   $error    — (Opcional) Mensaje de error
  */
 
+// Mostrar errores para depuración
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
-// --- Datos de prueba ---
-$rol = $rol ?? 'coordinador';
-$titulos = $titulos ?? [
-    ['tibro_id' => 1, 'tibro_nombre' => 'Tecnólogo'],
-    ['tibro_id' => 2, 'tibro_nombre' => 'Técnico'],
-    ['tibro_id' => 3, 'tibro_nombre' => 'Especialización Tecnológica'],
-];
-$mensaje = $mensaje ?? null;
-$error = $error ?? null;
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/TituloProgramaController.php';
+
+$controller = new TituloProgramaController();
+
+// Variables para mensajes
+$mensaje = $_GET['mensaje'] ?? null;
+$error = $_GET['error'] ?? null;
+
+// Procesar eliminación
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $resultado = $controller->delete($_POST['titpro_id']);
+    
+    if ($resultado['success']) {
+        $mensaje = $resultado['mensaje'];
+    } else {
+        $error = $resultado['error'];
+    }
+}
+
+// Obtener todos los títulos
+$titulos = $controller->index();
 
 $title = 'Gestión de Títulos';
 $breadcrumb = [
-    ['label' => 'Inicio', 'url' => addRolParam('/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php', $rol)],
+    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
     ['label' => 'Títulos de Programa'],
 ];
 
-// Incluir el header seg�n el rol
+// Incluir el header según el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
 } else {
@@ -81,18 +91,18 @@ endif; ?>
                     <tbody>
                         <?php foreach ($titulos as $titulo): ?>
                         <tr>
-                            <td><span class="table-id"><?php echo htmlspecialchars($titulo['tibro_id']); ?></span></td>
-                            <td><?php echo htmlspecialchars($titulo['tibro_nombre']); ?></td>
+                            <td><span class="table-id"><?php echo htmlspecialchars($titulo['titpro_id']); ?></span></td>
+                            <td><?php echo htmlspecialchars($titulo['titpro_nombre']); ?></td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="ver.php?id=<?php echo $titulo['tibro_id']; ?>" class="action-btn view-btn" title="Ver detalle">
+                                    <a href="ver.php?id=<?php echo $titulo['titpro_id']; ?>" class="action-btn view-btn" title="Ver detalle">
                                         <i data-lucide="eye"></i>
                                     </a>
                                     <?php if ($rol === 'coordinador'): ?>
-                                        <a href="editar.php?id=<?php echo $titulo['tibro_id']; ?>" class="action-btn edit-btn" title="Editar título">
+                                        <a href="editar.php?id=<?php echo $titulo['titpro_id']; ?>" class="action-btn edit-btn" title="Editar título">
                                             <i data-lucide="pencil-line"></i>
                                         </a>
-                                        <button type="button" class="action-btn delete-btn" title="Eliminar título" onclick="confirmDelete(<?php echo $titulo['tibro_id']; ?>, '<?php echo htmlspecialchars(addslashes($titulo['tibro_nombre']), ENT_QUOTES); ?>')">
+                                        <button type="button" class="action-btn delete-btn" title="Eliminar título" onclick="confirmDelete(<?php echo $titulo['titpro_id']; ?>, '<?php echo htmlspecialchars(addslashes($titulo['titpro_nombre']), ENT_QUOTES); ?>')">
                                             <i data-lucide="trash-2"></i>
                                         </button>
                                     <?php
@@ -146,7 +156,7 @@ endif; ?>
                 Cancelar
             </button>
             <form id="deleteForm" method="POST" action="" style="flex:1;">
-                <input type="hidden" name="tibro_id" id="deleteModalId">
+                <input type="hidden" name="titpro_id" id="deleteModalId">
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center;">
                     <i data-lucide="trash-2"></i>

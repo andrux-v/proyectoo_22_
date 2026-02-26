@@ -1,37 +1,85 @@
 <?php
 /**
- * Vista: Editar Programa (editar.php)
+ * Vista: Editar Programa
  */
 
+// Mostrar errores para depuraci贸n
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
 
-// Redirigir si es instructor (no tiene permisos para crear/editar)
+// Redirigir si es instructor
 if ($rol === 'instructor') {
     header('Location: ' . addRolParam('index.php', $rol));
     exit;
 }
-// --- Datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/ProgramaController.php';
+
+$controller = new ProgramaController();
+
+// Obtener c贸digo del programa
+$prog_codigo = $_GET['codigo'] ?? null;
+
+if (!$prog_codigo) {
+    header('Location: index.php?rol=' . $rol . '&error=' . urlencode('C贸digo de programa no proporcionado'));
+    exit;
+}
+
+// Obtener el programa
+$programa = $controller->show($prog_codigo);
+
+if (!$programa) {
+    header('Location: index.php?rol=' . $rol . '&error=' . urlencode('Programa no encontrado'));
+    exit;
+}
+
+$errores = [];
+$old = [];
+
+// Procesar formulario
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = [
+        'prog_codigo' => $prog_codigo,
+        'prog_denominacion' => $_POST['prog_denominacion'] ?? '',
+        'tit_programa_titpro_id' => $_POST['tit_programa_titpro_id'] ?? '',
+        'prog_tipo' => $_POST['prog_tipo'] ?? ''
+    ];
+
+    $resultado = $controller->update($data);
+
+    if ($resultado['success']) {
+        $redirectUrl = 'index.php?rol=' . $rol . '&mensaje=' . urlencode($resultado['mensaje']);
+        header('Location: ' . $redirectUrl);
+        exit;
+    } else {
+        $errores = $resultado['errores'];
+        $old = $data;
+        // Actualizar programa con los datos enviados para mostrar en el formulario
+        $programa = array_merge($programa, $data);
+    }
+}
+
+// Obtener niveles de formaci贸n
+$titulos = $controller->getTitulosPrograma();
+
 $rol = $rol ?? 'coordinador';
-$programa = $programa ?? ['prog_codigo' => '228106', 'prog_denominacion' => 'An谩lisis y Desarrollo de Software', 'prog_tipo' => 'Titulada', 'TIT_PROGRAMA_tibro_id' => 1];
-$titulos = $titulos ?? [
-    ['tibro_id' => 1, 'tibro_nombre' => 'Tecn贸logo'],
-    ['tibro_id' => 2, 'tibro_nombre' => 'T茅cnico'],
-];
-$errores = $errores ?? [];
-// --- Fin datos de prueba ---
 
 $title = 'Editar Programa';
 $breadcrumb = [
-    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
+    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : ($rol === 'centro' ? '/proyectoo_22_/mvc_programa/views/centro_formacion/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php')],
     ['label' => 'Programas', 'url' => addRolParam('index.php', $rol)],
     ['label' => 'Editar'],
 ];
 
-// Incluir el header seg鷑 el rol
+// Incluir el header seg煤n el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
+} elseif ($rol === 'centro') {
+    include __DIR__ . '/../layout/header_centro.php';
 } else {
     include __DIR__ . '/../layout/header_coordinador.php';
 }
@@ -103,29 +151,28 @@ if ($rol === 'instructor') {
                     </div>
 
                     <div class="form-group">
-                        <label for="TIT_PROGRAMA_tibro_id" class="form-label">
+                        <label for="tit_programa_titpro_id" class="form-label">
                             Nivel de Formaci贸n <span class="required">*</span>
                         </label>
                         <select
-                            id="TIT_PROGRAMA_tibro_id"
-                            name="TIT_PROGRAMA_tibro_id"
-                            class="form-input <?php echo isset($errores['TIT_PROGRAMA_tibro_id']) ? 'input-error' : ''; ?>"
+                            id="tit_programa_titpro_id"
+                            name="tit_programa_titpro_id"
+                            class="form-input <?php echo isset($errores['tit_programa_titpro_id']) ? 'input-error' : ''; ?>"
                             required
                         >
                             <option value="">Seleccione...</option>
                             <?php foreach ($titulos as $titulo): ?>
                                 <option
-                                    value="<?php echo $titulo['tibro_id']; ?>"
-                                    <?php echo($programa['TIT_PROGRAMA_tibro_id'] == $titulo['tibro_id']) ? 'selected' : ''; ?>
+                                    value="<?php echo $titulo['titpro_id']; ?>"
+                                    <?php echo($programa['tit_programa_titpro_id'] == $titulo['titpro_id']) ? 'selected' : ''; ?>
                                 >
-                                    <?php echo htmlspecialchars($titulo['tibro_nombre']); ?>
+                                    <?php echo htmlspecialchars($titulo['titpro_nombre']); ?>
                                 </option>
-                            <?php
-endforeach; ?>
+                            <?php endforeach; ?>
                         </select>
-                        <div class="form-error <?php echo isset($errores['TIT_PROGRAMA_tibro_id']) ? 'visible' : ''; ?>">
+                        <div class="form-error <?php echo isset($errores['tit_programa_titpro_id']) ? 'visible' : ''; ?>">
                             <i data-lucide="alert-circle"></i>
-                            <span><?php echo htmlspecialchars($errores['TIT_PROGRAMA_tibro_id'] ?? 'Requerido.'); ?></span>
+                            <span><?php echo htmlspecialchars($errores['tit_programa_titpro_id'] ?? 'Requerido.'); ?></span>
                         </div>
                     </div>
 

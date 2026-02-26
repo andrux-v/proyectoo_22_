@@ -3,26 +3,43 @@
  * Vista: Listado de Fichas (index.php)
  */
 
+// Mostrar errores para depuraci贸n
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Detectar rol
 include __DIR__ . '/../layout/rol_detector.php';
-// --- Datos de prueba ---
-$rol = $rol ?? 'coordinador';
-$fichas = $fichas ?? [
-    ['fich_id' => '228106-1', 'prog_denominacion' => 'An谩lisis y Desarrollo de Software', 'instructor_nombre' => 'Juan P茅rez', 'fich_jornada' => 'Diurna'],
-    ['fich_id' => '233104-2', 'prog_denominacion' => 'Gesti贸n Contable', 'instructor_nombre' => 'Mar铆a G贸mez', 'fich_jornada' => 'Mixta'],
-];
-$mensaje = $mensaje ?? null;
-$error = $error ?? null;
-// --- Fin datos de prueba ---
+
+// Incluir el controlador
+require_once __DIR__ . '/../../controller/FichaController.php';
+
+$controller = new FichaController();
+
+// Variables para mensajes
+$mensaje = $_GET['mensaje'] ?? null;
+$error = $_GET['error'] ?? null;
+
+// Procesar eliminaci贸n
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $resultado = $controller->delete($_POST['fich_id']);
+    
+    if ($resultado['success']) {
+        $mensaje = $resultado['mensaje'];
+    } else {
+        $error = $resultado['error'];
+    }
+}
+
+// Obtener todas las fichas
+$fichas = $controller->index();
 
 $title = 'Gesti贸n de Fichas';
 $breadcrumb = [
-    ['label' => 'Inicio', 'url' => addRolParam('/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php', $rol)],
+    ['label' => 'Dashboard', 'url' => $rol === 'instructor' ? '/proyectoo_22_/mvc_programa/views/instructor/dashboard.php' : '/proyectoo_22_/mvc_programa/views/coordinador/dashboard.php'],
     ['label' => 'Fichas'],
 ];
 
-// Incluir el header seg鷑 el rol
+// Incluir el header seg煤n el rol
 if ($rol === 'instructor') {
     include __DIR__ . '/../layout/header_instructor.php';
 } else {
@@ -76,7 +93,7 @@ endif; ?>
                         <tr>
                             <td><span class="table-id"><?php echo htmlspecialchars($ficha['fich_id']); ?></span></td>
                             <td><?php echo htmlspecialchars($ficha['prog_denominacion']); ?></td>
-                            <td><?php echo htmlspecialchars($ficha['instructor_nombre']); ?></td>
+                            <td><?php echo htmlspecialchars($ficha['instructor_lider']); ?></td>
                             <td><?php echo htmlspecialchars($ficha['fich_jornada']); ?></td>
                             <td>
                                 <div class="table-actions">

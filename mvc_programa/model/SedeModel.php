@@ -9,7 +9,7 @@ class SedeModel
     public function __construct($sede_id, $sede_nombre)
     {
         $this->setSedeId($sede_id);
-        $this->setSedNombre($sede_nombre);
+        $this->setSedeNombre($sede_nombre);
         $this->db = Conexion::getConnect();
     }
     //getters 
@@ -18,7 +18,7 @@ class SedeModel
     {
         return $this->sede_id;
     }
-    public function getSedNombre()
+    public function getSedeNombre()
     {
         return $this->sede_nombre;
     }
@@ -28,7 +28,7 @@ class SedeModel
     {
         $this->sede_id = $sede_id;
     }
-    public function setSedNombre($sede_nombre)
+    public function setSedeNombre($sede_nombre)
     {
         $this->sede_nombre = $sede_nombre;
     }

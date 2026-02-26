@@ -22,9 +22,9 @@ class AmbienteController
     public function index()
     {
         try {
-            $query = "SELECT a.amb_id, a.amb_nombre, a.SEDE_sede_id, s.sede_nombre 
+            $query = "SELECT a.amb_id, a.amb_nombre, a.sede_sede_id, s.sede_nombre 
                       FROM ambiente a 
-                      LEFT JOIN sede s ON a.SEDE_sede_id = s.sede_id 
+                      LEFT JOIN sede s ON a.sede_sede_id = s.sede_id 
                       ORDER BY a.amb_nombre ASC";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
@@ -41,9 +41,9 @@ class AmbienteController
     public function show($amb_id)
     {
         try {
-            $query = "SELECT a.amb_id, a.amb_nombre, a.SEDE_sede_id, s.sede_nombre 
+            $query = "SELECT a.amb_id, a.amb_nombre, a.sede_sede_id, s.sede_nombre 
                       FROM ambiente a 
-                      LEFT JOIN sede s ON a.SEDE_sede_id = s.sede_id 
+                      LEFT JOIN sede s ON a.sede_sede_id = s.sede_id 
                       WHERE a.amb_id = :amb_id";
             $stmt = $this->db->prepare($query);
             $stmt->execute([':amb_id' => $amb_id]);
@@ -70,7 +70,7 @@ class AmbienteController
             $ambiente = new AmbienteModel(
                 $data['amb_id'],
                 $data['amb_nombre'],
-                $data['SEDE_sede_id']
+                $data['sede_sede_id']
             );
 
             $ambiente->create();
@@ -104,7 +104,7 @@ class AmbienteController
             $ambiente = new AmbienteModel(
                 $data['amb_id'],
                 $data['amb_nombre'],
-                $data['SEDE_sede_id']
+                $data['sede_sede_id']
             );
 
             $ambiente->update();
@@ -123,7 +123,7 @@ class AmbienteController
     {
         try {
             // Verificar si el ambiente está siendo usado en asignaciones
-            $query = "SELECT COUNT(*) as count FROM asignacion WHERE AMBIENTE_amb_id = :amb_id";
+            $query = "SELECT COUNT(*) as count FROM asignacion WHERE ambiente_amb_id = :amb_id";
             $stmt = $this->db->prepare($query);
             $stmt->execute([':amb_id' => $amb_id]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -160,6 +160,33 @@ class AmbienteController
     }
 
     /**
+     * Mostrar formulario de creación
+     */
+    public function showCreate()
+    {
+        $sedes = $this->getSedes();
+        $rol = $_GET['rol'] ?? 'coordinador';
+        include __DIR__ . '/../views/ambiente/crear.php';
+    }
+
+    /**
+     * Mostrar formulario de edición
+     */
+    public function showEdit($amb_id)
+    {
+        $ambiente = $this->show($amb_id);
+        
+        if (!$ambiente) {
+            header('Location: index.php?error=' . urlencode('Ambiente no encontrado'));
+            exit;
+        }
+        
+        $sedes = $this->getSedes();
+        $rol = $_GET['rol'] ?? 'coordinador';
+        include __DIR__ . '/../views/ambiente/editar.php';
+    }
+
+    /**
      * Validar datos del ambiente
      */
     private function validar($data, $esActualizacion = false)
@@ -183,8 +210,8 @@ class AmbienteController
         }
 
         // Validar sede
-        if (empty($data['SEDE_sede_id'])) {
-            $errores['SEDE_sede_id'] = 'Debe seleccionar una sede';
+        if (empty($data['sede_sede_id'])) {
+            $errores['sede_sede_id'] = 'Debe seleccionar una sede';
         }
 
         return $errores;
