@@ -146,6 +146,16 @@ if ($rol === 'instructor') {
     background: #fef3c7;
 }
 
+.calendar-day.sunday {
+    background: #fee2e2;
+    opacity: 0.7;
+}
+
+.calendar-day.sunday .day-number {
+    color: #dc2626;
+    font-weight: 700;
+}
+
 .day-number {
     font-size: 14px;
     font-weight: 600;
@@ -163,17 +173,45 @@ if ($rol === 'instructor') {
     padding: 4px 8px;
     margin: 2px 0;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.2s;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .calendar-event:hover {
     background: #007832;
     transform: translateY(-1px);
+}
+
+.calendar-event.event-start {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.calendar-event.event-end {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.event-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.event-indicator.start {
+    background: #10b981;
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.6);
+}
+
+.event-indicator.end {
+    background: #ef4444;
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.6);
 }
 
 .event-modal {
@@ -617,24 +655,61 @@ function renderCalendar() {
     const today = new Date();
     for (let day = 1; day <= lastDate; day++) {
         const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const currentDay = new Date(year, month, day);
         const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+        const isSunday = currentDay.getDay() === 0;
         
         // Filtrar asignaciones para este día (usar filteredAsignaciones en lugar de asignaciones)
         const dayEvents = filteredAsignaciones.filter(asig => {
             const fechaIni = new Date(asig.asig_fecha_ini);
             const fechaFin = new Date(asig.asig_fecha_fin);
-            const currentDay = new Date(year, month, day);
-            return currentDay >= fechaIni && currentDay <= fechaFin;
+            const currentDayDate = new Date(year, month, day);
+            
+            // Normalizar fechas para comparación (solo fecha, sin hora)
+            fechaIni.setHours(0, 0, 0, 0);
+            fechaFin.setHours(0, 0, 0, 0);
+            currentDayDate.setHours(0, 0, 0, 0);
+            
+            return currentDayDate >= fechaIni && currentDayDate <= fechaFin;
         });
         
-        calendarHTML += `<div class="calendar-day ${isToday ? 'today' : ''}">
+        let sundayClass = isSunday ? ' sunday' : '';
+        calendarHTML += `<div class="calendar-day ${isToday ? 'today' : ''}${sundayClass}">
             <div class="day-number">${day}</div>`;
         
-        dayEvents.forEach(event => {
-            calendarHTML += `<div class="calendar-event" onclick="showEventDetail(${event.asig_id})">
-                ${event.amb_nombre || 'Sin ambiente'}
-            </div>`;
-        });
+        // Mostrar eventos solo si no es domingo
+        if (!isSunday) {
+            dayEvents.forEach(event => {
+                const fechaIni = new Date(event.asig_fecha_ini);
+                const fechaFin = new Date(event.asig_fecha_fin);
+                const currentDayDate = new Date(year, month, day);
+                
+                fechaIni.setHours(0, 0, 0, 0);
+                fechaFin.setHours(0, 0, 0, 0);
+                currentDayDate.setHours(0, 0, 0, 0);
+                
+                const isStart = currentDayDate.getTime() === fechaIni.getTime();
+                const isEnd = currentDayDate.getTime() === fechaFin.getTime();
+                
+                let eventClass = '';
+                let indicator = '';
+                let eventText = event.amb_nombre || 'Sin ambiente';
+                
+                if (isStart) {
+                    eventClass = 'event-start';
+                    indicator = '<span class="event-indicator start"></span>';
+                    eventText = '🟢 ' + eventText;
+                } else if (isEnd) {
+                    eventClass = 'event-end';
+                    indicator = '<span class="event-indicator end"></span>';
+                    eventText = eventText + ' 🔴';
+                }
+                
+                calendarHTML += `<div class="calendar-event ${eventClass}" onclick="showEventDetail(${event.asig_id})">
+                    ${indicator}${eventText}
+                </div>`;
+            });
+        }
         
         calendarHTML += `</div>`;
     }

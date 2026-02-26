@@ -16,6 +16,7 @@ DELIMITER //
 -- ============================================
 -- TRIGGER 1: Validación antes de insertar
 -- Valida que la carga horaria no supere 20 horas semanales
+-- No cuenta los domingos en el cálculo
 -- ============================================
 CREATE TRIGGER before_asignacion_insert_check
 BEFORE INSERT ON asignacion
@@ -23,7 +24,9 @@ FOR EACH ROW
 BEGIN
     DECLARE total_horas_semanales INT DEFAULT 0;
     DECLARE horas_competencia INT DEFAULT 0;
-    DECLARE semanas_asignacion INT DEFAULT 0;
+    DECLARE dias_totales INT DEFAULT 0;
+    DECLARE dias_habiles INT DEFAULT 0;
+    DECLARE semanas_asignacion DECIMAL(10,2) DEFAULT 0;
     DECLARE horas_por_semana DECIMAL(10,2) DEFAULT 0;
     
     -- Obtener las horas de la competencia
@@ -31,8 +34,15 @@ BEGIN
     FROM competencia
     WHERE comp_id = NEW.competencia_comp_id;
     
-    -- Calcular semanas de la asignación (diferencia en días / 7)
-    SET semanas_asignacion = DATEDIFF(NEW.asig_fecha_fin, NEW.asig_fecha_ini) / 7;
+    -- Calcular días totales
+    SET dias_totales = DATEDIFF(NEW.asig_fecha_fin, NEW.asig_fecha_ini);
+    
+    -- Calcular días hábiles (excluyendo domingos)
+    -- Aproximación: 6 días hábiles por cada 7 días
+    SET dias_habiles = FLOOR(dias_totales * 6 / 7);
+    
+    -- Calcular semanas hábiles (6 días = 1 semana hábil)
+    SET semanas_asignacion = dias_habiles / 6;
     
     -- Evitar división por cero
     IF semanas_asignacion <= 0 THEN
@@ -51,7 +61,7 @@ BEGIN
     -- Calcular total de horas semanales del instructor en el mismo período
     SELECT COALESCE(SUM(
         (SELECT comp_horas FROM competencia WHERE comp_id = a.competencia_comp_id) / 
-        (DATEDIFF(a.asig_fecha_fin, a.asig_fecha_ini) / 7)
+        ((FLOOR(DATEDIFF(a.asig_fecha_fin, a.asig_fecha_ini) * 6 / 7)) / 6)
     ), 0) INTO total_horas_semanales
     FROM asignacion a
     WHERE a.instructor_inst_id = NEW.instructor_inst_id

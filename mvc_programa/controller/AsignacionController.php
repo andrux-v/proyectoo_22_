@@ -618,6 +618,7 @@ class AsignacionController
      * Validar carga horaria del instructor
      * Verifica que no se superen las 20 horas semanales por competencia
      * y las 40 horas semanales totales del instructor
+     * No cuenta los domingos en el cálculo
      */
     private function validarCargaHoraria($instructor_id, $competencia_id, $fecha_ini, $fecha_fin, $asig_id_excluir = null)
     {
@@ -634,11 +635,16 @@ class AsignacionController
             
             $horas_competencia = $competencia['comp_horas'];
             
-            // Calcular semanas de la asignación
+            // Calcular días hábiles (excluyendo domingos)
             $fecha_inicio = new DateTime($fecha_ini);
             $fecha_final = new DateTime($fecha_fin);
-            $dias = $fecha_inicio->diff($fecha_final)->days;
-            $semanas = max(1, $dias / 7); // Mínimo 1 semana
+            $dias_totales = $fecha_inicio->diff($fecha_final)->days;
+            
+            // Calcular días hábiles: aproximadamente 6 de cada 7 días
+            $dias_habiles = floor($dias_totales * 6 / 7);
+            
+            // Calcular semanas hábiles (6 días = 1 semana hábil)
+            $semanas = max(1, $dias_habiles / 6);
             
             // Calcular horas por semana de esta asignación
             $horas_por_semana = $horas_competencia / $semanas;
@@ -648,7 +654,7 @@ class AsignacionController
                 return [
                     'valido' => false,
                     'mensaje' => sprintf(
-                        'Esta asignación requiere %.2f horas semanales, superando el límite de 20 horas por competencia. Considere extender el período de la asignación.',
+                        'Esta asignación requiere %.2f horas semanales (sin contar domingos), superando el límite de 20 horas por competencia. Considere extender el período de la asignación.',
                         $horas_por_semana
                     )
                 ];
@@ -690,7 +696,11 @@ class AsignacionController
                 $fecha_ini_asig = new DateTime($asig['asig_fecha_ini']);
                 $fecha_fin_asig = new DateTime($asig['asig_fecha_fin']);
                 $dias_asig = $fecha_ini_asig->diff($fecha_fin_asig)->days;
-                $semanas_asig = max(1, $dias_asig / 7);
+                
+                // Calcular días hábiles (sin domingos)
+                $dias_habiles_asig = floor($dias_asig * 6 / 7);
+                $semanas_asig = max(1, $dias_habiles_asig / 6);
+                
                 $total_horas_semanales += $asig['comp_horas'] / $semanas_asig;
             }
             
@@ -699,7 +709,7 @@ class AsignacionController
                 return [
                     'valido' => false,
                     'mensaje' => sprintf(
-                        'El instructor ya tiene %.2f horas semanales asignadas en este período. Esta nueva asignación (%.2f horas/semana) superaría el límite de 40 horas semanales.',
+                        'El instructor ya tiene %.2f horas semanales asignadas en este período. Esta nueva asignación (%.2f horas/semana) superaría el límite de 40 horas semanales (sin contar domingos).',
                         $total_horas_semanales,
                         $horas_por_semana
                     )
@@ -710,7 +720,9 @@ class AsignacionController
                 'valido' => true,
                 'mensaje' => 'Validación exitosa',
                 'horas_por_semana' => $horas_por_semana,
-                'total_horas_semanales' => $total_horas_semanales + $horas_por_semana
+                'total_horas_semanales' => $total_horas_semanales + $horas_por_semana,
+                'dias_habiles' => $dias_habiles,
+                'semanas_habiles' => $semanas
             ];
             
         } catch (PDOException $e) {
