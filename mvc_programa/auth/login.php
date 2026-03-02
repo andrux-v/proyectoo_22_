@@ -98,7 +98,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['rol'])) {
 require_once __DIR__ . '/../Conexion.php';
 
 $error = '';
-$rol_seleccionado = $_GET['rol'] ?? 'coordinador';
+$rol_seleccionado = $_POST['rol'] ?? $_GET['rol'] ?? 'coordinador';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $correo = $_POST['correo'] ?? '';
@@ -506,9 +506,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
             const selectedRole = document.querySelector('input[name="rol"]:checked').value;
+            const registerLink = document.getElementById('registerLink');
+            
             if (selectedRole === 'instructor') {
-                document.getElementById('registerLink').innerHTML = '<span style="color: #718096;">Los instructores son registrados por el Centro de Formación</span>';
+                registerLink.innerHTML = '<span style="color: #718096;">Los instructores son registrados por el Centro de Formación</span>';
+            } else {
+                registerLink.innerHTML = '¿No tienes cuenta? <a href="registro.php?rol=' + selectedRole + '">Regístrate aquí</a>';
             }
+            
             lucide.createIcons();
         });
     </script>
