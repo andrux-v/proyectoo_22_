@@ -107,6 +107,14 @@ include __DIR__ . '/../layout/header_instructor.php';
         <p class="dashboard-card-description">Ver y consultar mi información personal</p>
     </a>
 
+    <a href="/proyectoo_22_/mvc_programa/views/instructor/perfil.php" class="dashboard-card">
+        <div class="dashboard-card-icon">
+            <i data-lucide="settings" style="width: 28px; height: 28px;"></i>
+        </div>
+        <h3 class="dashboard-card-title">Editar Perfil</h3>
+        <p class="dashboard-card-description">Actualizar mis datos personales y contraseña</p>
+    </a>
+
     <a href="/proyectoo_22_/mvc_programa/views/asignacion/index.php?rol=instructor" class="dashboard-card">
         <div class="dashboard-card-icon">
             <i data-lucide="calendar" style="width: 28px; height: 28px;"></i>

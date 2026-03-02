@@ -343,5 +343,85 @@ class InstructorController
             return ['success' => false, 'error' => 'Error al autenticar'];
         }
     }
+    /**
+     * Actualizar perfil del instructor (datos personales y contraseña)
+     */
+    public function updatePerfil($data)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // Preparar datos para actualizar
+            $updateData = [
+                'inst_nombres' => $data['inst_nombres'],
+                'inst_apellidos' => $data['inst_apellidos'],
+                'inst_correo' => $data['inst_correo'],
+                'inst_telefono' => $data['inst_telefono']
+            ];
+
+            // Si hay nueva contraseña, hashearla
+            if (!empty($data['nueva_password'])) {
+                $updateData['inst_password'] = password_hash($data['nueva_password'], PASSWORD_DEFAULT);
+            }
+
+            // Verificar que el correo no esté en uso por otro instructor
+            $query = "SELECT inst_id FROM instructor WHERE inst_correo = :correo AND inst_id != :inst_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([
+                ':correo' => $data['inst_correo'],
+                ':inst_id' => $data['inst_id']
+            ]);
+            
+            if ($stmt->fetch()) {
+                $this->db->rollBack();
+                return ['success' => false, 'errores' => ['inst_correo' => 'Este correo ya está en uso por otro instructor']];
+            }
+
+            // Construir query de actualización
+            $setClauses = [];
+            $params = [':inst_id' => $data['inst_id']];
+            
+            foreach ($updateData as $field => $value) {
+                $setClauses[] = "$field = :$field";
+                $params[":$field"] = $value;
+            }
+
+            $query = "UPDATE instructor SET " . implode(', ', $setClauses) . " WHERE inst_id = :inst_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute($params);
+
+            $this->db->commit();
+            
+            $mensaje = 'Perfil actualizado exitosamente';
+            if (!empty($data['nueva_password'])) {
+                $mensaje .= '. Su contraseña ha sido cambiada.';
+            }
+            
+            return ['success' => true, 'mensaje' => $mensaje];
+
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            error_log("Error en InstructorController::updatePerfil - " . $e->getMessage());
+            return ['success' => false, 'error' => 'Error al actualizar el perfil'];
+        }
+    }
+
+    /**
+     * Obtener instructor por ID (para perfil)
+     */
+    public function getInstructorById($inst_id)
+    {
+        try {
+            $query = "SELECT inst_id, inst_nombres, inst_apellidos, inst_correo, inst_telefono, inst_password
+                      FROM instructor 
+                      WHERE inst_id = :inst_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([':inst_id' => $inst_id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en InstructorController::getInstructorById - " . $e->getMessage());
+            return null;
+        }
+    }
 }
 ?>

@@ -72,9 +72,9 @@ $breadcrumb = $breadcrumb ?? [];
             </a>
             
             <div class="sidebar-section-title">Configuración</div>
-            <a href="/proyectoo_22_/mvc_programa/auth/cambiar_password.php" class="sidebar-link">
-                <i data-lucide="key"></i>
-                Cambiar Contraseña
+            <a href="/proyectoo_22_/mvc_programa/views/instructor/perfil.php" class="sidebar-link <?php echo(strpos($_SERVER['REQUEST_URI'] ?? '', '/instructor/perfil.php') !== false) ? 'active' : ''; ?>">
+                <i data-lucide="settings"></i>
+                Editar Perfil
             </a>
         </nav>
 
